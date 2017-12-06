@@ -1,4 +1,4 @@
 $LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
-require "rangeset"
+require "range_set"
 
 require "minitest/autorun"

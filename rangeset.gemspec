@@ -1,16 +1,15 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "rangeset/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "rangeset"
-  spec.version       = Rangeset::VERSION
+  spec.version       = "0.1.0"
   spec.authors       = ["Rico Jasper"]
   spec.email         = ["jasper.rico@gmail.com"]
 
-  spec.summary       = %q{TODO: Write a short summary, because RubyGems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.summary       = "set of ranges"
+  # spec.description   = %q{TODO: Write a longer description or delete this line.}
   spec.homepage      = "TODO: Put your gem's website or public repo URL here."
   spec.license       = "MIT"
 
