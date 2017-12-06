@@ -1,0 +1,24 @@
+PATH
+  remote: .
+  specs:
+    rangeset (0.1.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    minitest (5.10.3)
+    rake (10.5.0)
+    treemap (1.0.3)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  bundler (~> 1.16)
+  minitest (~> 5.0)
+  rake (~> 10.0)
+  rangeset!
+  treemap (~> 1.0, >= 1.0.3)
+
+BUNDLED WITH
+   1.16.0
