@@ -1,5 +1,5 @@
 require 'treemap'
-require './lib/patches/tree_map'
+require_relative 'patches/tree_map'
 
 class RangeSet
   include Enumerable
