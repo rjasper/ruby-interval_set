@@ -1,7 +1,8 @@
 PATH
   remote: .
   specs:
-    rangeset (0.1.0)
+    rangeset (0.1.0.pre.RC2.pre.SNAPSHOT)
+      treemap (~> 1.0, >= 1.0.3)
 
 GEM
   remote: https://rubygems.org/
@@ -18,7 +19,6 @@ DEPENDENCIES
   minitest (~> 5.0)
   rake (~> 10.0)
   rangeset!
-  treemap (~> 1.0, >= 1.0.3)
 
 BUNDLED WITH
    1.16.0
