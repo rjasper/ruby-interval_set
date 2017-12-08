@@ -189,6 +189,21 @@ class RangeSet
     @range_map.values
   end
 
+  def to_s
+    string_io = StringIO.new
+
+    last_index = count - 1
+
+    string_io << '['
+    each_with_index do |range, i|
+      string_io << range
+      string_io << ', ' if i < last_index
+    end
+    string_io << ']'
+
+    string_io.string
+  end
+
   protected
 
   def range_map

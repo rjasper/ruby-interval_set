@@ -6,6 +6,14 @@ class RangeSetTest < Minitest::Test
     assert RangeSet.new
   end
 
+  def test_that_empty_converts_to_string
+    assert_equal "[]", RangeSet.new.to_s
+  end
+
+  def test_that_it_converts_to_string
+    assert_equal "[1..2, 3..4]", RangeSet.new.add(1..2).add(3..4).to_s
+  end
+
   def test_that_it_is_empty
     assert_empty RangeSet.new
   end
