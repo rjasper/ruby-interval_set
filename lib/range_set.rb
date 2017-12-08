@@ -507,7 +507,12 @@ class RangeSet
   end
 
   def convolve_range!(range)
-    ranges = map {|r| r.min + range.min..r.max + range.max}
+    ranges = map do |r|
+      r.min + range.first..r.max + range.last
+    end.select do |r|
+      r.first < r.last
+    end
+
     clear
     ranges.each {|r| add_range(r)}
 
