@@ -46,6 +46,30 @@ class RangeSet
 
   alias_method :==, :eql?
 
+  def superset?(other)
+    include_range_set?(other)
+  end
+
+  alias_method :>=, :superset?
+
+  def proper_superset?(other)
+    !eql?(other) && superset?(other)
+  end
+
+  alias_method :>, :proper_superset?
+
+  def subset?(other)
+    other.include_range_set?(self)
+  end
+
+  alias_method :<=, :subset?
+
+  def proper_subset?(other)
+    !eql?(other) && subset?(other)
+  end
+
+  alias_method :<, :proper_subset?
+
   def overlapped_by?(range)
     empty? || (range.min <= min && range.max >= max)
   end

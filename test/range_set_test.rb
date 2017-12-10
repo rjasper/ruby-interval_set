@@ -175,6 +175,54 @@ class RangeSetTest < Minitest::Test
     assert !range_set.include?(RangeSet[1..2, 3..4, 5..6])
   end
 
+  def test_that_it_is_subset
+    assert RangeSet[] <= RangeSet[]
+    assert RangeSet[] <= RangeSet[0..1]
+    assert RangeSet[0..1] <= RangeSet[0..1]
+    assert RangeSet[1..2] <= RangeSet[0..3]
+  end
+
+  def test_that_it_is_not_subset
+    assert !(RangeSet[0..1] <= RangeSet[])
+    assert !(RangeSet[0..1] <= RangeSet[2..3])
+  end
+
+  def test_that_it_is_proper_subset
+    assert RangeSet[] < RangeSet[0..1]
+    assert RangeSet[1..2] < RangeSet[0..3]
+  end
+
+  def test_that_it_is_not_proper_subset
+    assert !(RangeSet[] <RangeSet[])
+    assert !(RangeSet[0..1] < RangeSet[])
+    assert !(RangeSet[0..1] < RangeSet[0..1])
+    assert !(RangeSet[0..1] < RangeSet[2..3])
+  end
+
+  def test_that_it_is_superset
+    assert RangeSet[] >= RangeSet[]
+    assert RangeSet[0..1] >= RangeSet[]
+    assert RangeSet[0..1] >= RangeSet[0..1]
+    assert RangeSet[0..3] >= RangeSet[1..2]
+  end
+
+  def test_that_it_is_not_superset
+    assert !(RangeSet[] >= RangeSet[0..1])
+    assert !(RangeSet[2..3] >= RangeSet[0..1])
+  end
+
+  def test_that_it_is_proper_superset
+    assert RangeSet[0..1] > RangeSet[]
+    assert RangeSet[0..3] > RangeSet[1..2]
+  end
+
+  def test_that_it_is_not_proper_superset
+    assert !(RangeSet[] > RangeSet[])
+    assert !(RangeSet[] >= RangeSet[0..1])
+    assert !(RangeSet[0..1] > RangeSet[0..1])
+    assert !(RangeSet[2..3] >= RangeSet[0..1])
+  end
+
   def test_that_it_intersects_range
     range_set = RangeSet[0..1, 2..3]
 
