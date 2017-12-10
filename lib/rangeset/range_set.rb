@@ -34,6 +34,18 @@ class RangeSet
     min..max
   end
 
+  def eql?(other)
+    return false if count != other.count
+    return false if bounds != other.bounds
+
+    lhs_iter = enum_for
+    rhs_iter = other.enum_for
+
+    count.times.all? {lhs_iter.next == rhs_iter.next}
+  end
+
+  alias_method :==, :eql?
+
   def overlapped_by?(range)
     empty? || (range.min <= min && range.max >= max)
   end

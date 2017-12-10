@@ -6,12 +6,25 @@ class RangeSetTest < Minitest::Test
     assert RangeSet[]
   end
 
+  def test_that_it_equals
+    assert_equal RangeSet[], RangeSet[]
+    assert_equal RangeSet[0..1], RangeSet[0..1]
+    assert_equal RangeSet[0..1, 2..3], RangeSet[0..1, 2..3]
+    assert_equal RangeSet[0..1, 1..2], RangeSet[0..2]
+  end
+
+  def test_that_it_not_equals
+    assert RangeSet[] != RangeSet[0..1]
+    assert RangeSet[0..1] != RangeSet[]
+    assert RangeSet[0..1] != RangeSet[0..2]
+  end
+  
   def test_that_empty_converts_to_string
     assert_equal '[]', RangeSet[].to_s
   end
 
   def test_that_it_converts_to_string
-    assert_equal '[1..2, 3..4]', RangeSet[].add(1..2).add(3..4).to_s
+    assert_equal '[1..2, 3..4]', RangeSet[1..2].add(3..4).to_s
   end
 
   def test_that_it_is_empty
@@ -19,7 +32,7 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_is_not_empty
-    assert !RangeSet[].add(0..1).empty?
+    assert !RangeSet[0..1].empty?
   end
 
   def test_that_it_copies_empty
@@ -29,7 +42,7 @@ class RangeSetTest < Minitest::Test
     copy = copy.copy(original)
 
     assert_empty copy
-    assert copy != original
+    assert !copy.equal?(original)
   end
 
   def test_that_it_copies_non_empty
@@ -39,7 +52,7 @@ class RangeSetTest < Minitest::Test
     copy.copy(original)
 
     assert_equal [0..1], copy.to_a
-    assert copy != original
+    assert !copy.equal?(original)
   end
 
   def test_that_it_clears_data_on_copy
@@ -49,7 +62,7 @@ class RangeSetTest < Minitest::Test
     copy.copy(original)
 
     assert_equal [0..1], copy.to_a
-    assert copy != original
+    assert !copy.equal?(original)
   end
 
   def test_that_it_clones_empty
@@ -58,7 +71,7 @@ class RangeSetTest < Minitest::Test
     clone = original.clone
 
     assert_empty clone
-    assert clone != original
+    assert !clone.equal?(original)
   end
 
   def test_that_it_clones_non_empty
@@ -67,7 +80,7 @@ class RangeSetTest < Minitest::Test
     clone = original.clone
 
     assert_equal [0..1], clone.to_a
-    assert clone != original
+    assert !clone.equal?(original)
   end
 
   def test_that_range_overlaps
@@ -144,7 +157,7 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_range_set_includes_empty
-    assert RangeSet[].add(0..1).include?(RangeSet[])
+    assert RangeSet[0..1].include?(RangeSet[])
   end
 
   def test_that_range_set_is_included
@@ -546,39 +559,39 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_unions_left
-    assert_equal [-2..-1, 0..1], RangeSet[].add(0..1).union(-2..-1).to_a
+    assert_equal [-2..-1, 0..1], RangeSet[0..1].union(-2..-1).to_a
   end
 
   def test_that_it_unions_right
-    assert_equal [0..1, 2..3], RangeSet[].add(0..1).union(2..3).to_a
+    assert_equal [0..1, 2..3], RangeSet[0..1].union(2..3).to_a
   end
 
   def test_that_it_unions_tight_left
-    assert_equal [-2..1], RangeSet[].add(0..1).union(-2..0).to_a
+    assert_equal [-2..1], RangeSet[0..1].union(-2..0).to_a
   end
 
   def test_that_it_unions_tight_right
-    assert_equal [0..3], RangeSet[].add(0..1).union(1..3).to_a
+    assert_equal [0..3], RangeSet[0..1].union(1..3).to_a
   end
 
   def test_that_it_unions_left_overlap
-    assert_equal [-2..1], RangeSet[].add(0..1).union(-2..0.5).to_a
+    assert_equal [-2..1], RangeSet[0..1].union(-2..0.5).to_a
   end
 
   def test_that_it_unions_right_overlap
-    assert_equal [0..3], RangeSet[].add(0..1).union(0.5..3).to_a
+    assert_equal [0..3], RangeSet[0..1].union(0.5..3).to_a
   end
 
   def test_that_it_unions_inbetween
-    assert_equal [0..1], RangeSet[].add(0..1).union(0.25..0.75).to_a
+    assert_equal [0..1], RangeSet[0..1].union(0.25..0.75).to_a
   end
 
   def test_that_it_unions_entire_set
-    assert_equal [-1..2], RangeSet[].add(0..1).union(-1..2).to_a
+    assert_equal [-1..2], RangeSet[0..1].union(-1..2).to_a
   end
 
   def test_that_it_unions_bounds
-    assert_equal [0..1], RangeSet[].add(0..1).union(0..1).to_a
+    assert_equal [0..1], RangeSet[0..1].union(0..1).to_a
   end
 
   def test_that_it_unions_range_set
@@ -616,39 +629,39 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_differences_left
-    assert_equal [0..1], RangeSet[].add(0..1).difference(-2..-1).to_a
+    assert_equal [0..1], RangeSet[0..1].difference(-2..-1).to_a
   end
 
   def test_that_it_differences_right
-    assert_equal [0..1], RangeSet[].add(0..1).difference(2..3).to_a
+    assert_equal [0..1], RangeSet[0..1].difference(2..3).to_a
   end
 
   def test_that_it_differences_tight_left
-    assert_equal [0..1], RangeSet[].add(0..1).difference(-2..0).to_a
+    assert_equal [0..1], RangeSet[0..1].difference(-2..0).to_a
   end
 
   def test_that_it_differences_tight_right
-    assert_equal [0..1], RangeSet[].add(0..1).difference(1..3).to_a
+    assert_equal [0..1], RangeSet[0..1].difference(1..3).to_a
   end
 
   def test_that_it_differences_left_overlap
-    assert_equal [0.5..1], RangeSet[].add(0..1).difference(-2..0.5).to_a
+    assert_equal [0.5..1], RangeSet[0..1].difference(-2..0.5).to_a
   end
 
   def test_that_it_differences_right_overlap
-    assert_equal [0..0.5], RangeSet[].add(0..1).difference(0.5..3).to_a
+    assert_equal [0..0.5], RangeSet[0..1].difference(0.5..3).to_a
   end
 
   def test_that_it_differences_inbetween
-    assert_equal [0..0.25, 0.75..1], RangeSet[].add(0..1).difference(0.25..0.75).to_a
+    assert_equal [0..0.25, 0.75..1], RangeSet[0..1].difference(0.25..0.75).to_a
   end
 
   def test_that_it_differences_entire_set
-    assert_empty RangeSet[].add(0..1).difference(-1..2)
+    assert_empty RangeSet[0..1].difference(-1..2)
   end
 
   def test_that_it_differences_bounds
-    assert_empty RangeSet[].add(0..1).difference(0..1)
+    assert_empty RangeSet[0..1].difference(0..1)
   end
 
   def test_that_it_differences_range_set
