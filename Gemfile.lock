@@ -2,14 +2,14 @@ PATH
   remote: .
   specs:
     rangeset (0.1.0.pre.RC3.pre.SNAPSHOT)
-      treemap (~> 1.0, >= 1.0.3)
+      treemap-fork (~> 1.0, >= 1.0.4.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
     minitest (5.10.3)
     rake (10.5.0)
-    treemap (1.0.3)
+    treemap-fork (1.0.4.1)
 
 PLATFORMS
   ruby

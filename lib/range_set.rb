@@ -1,5 +1,4 @@
-require 'treemap'
-require_relative 'patches/tree_map'
+require 'treemap-fork'
 
 class RangeSet
   include Enumerable
