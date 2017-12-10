@@ -153,7 +153,7 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_empty_does_not_include_range_set
-    assert !RangeSet[].include?(RangeSet[] << (0..1))
+    assert !RangeSet[].include?(RangeSet[0..1])
   end
 
   def test_that_range_set_includes_empty
@@ -163,16 +163,16 @@ class RangeSetTest < Minitest::Test
   def test_that_range_set_is_included
     range_set = RangeSet[1..2, 3..4]
 
-    assert range_set.include?(RangeSet[] << (1..2))
-    assert range_set.include?(RangeSet[] << (3..4))
-    assert range_set.include?(RangeSet[] << (1..2) << (3..4))
+    assert range_set.include?(RangeSet[1..2])
+    assert range_set.include?(RangeSet[3..4])
+    assert range_set.include?(RangeSet[1..2, 3..4])
   end
 
   def test_that_range_set_is_not_included
     range_set = RangeSet[1..2, 3..4]
 
-    assert !range_set.include?(RangeSet[] << (0..3))
-    assert !range_set.include?(RangeSet[] << (1..2) << (3..4) << (5..6))
+    assert !range_set.include?(RangeSet[0..3])
+    assert !range_set.include?(RangeSet[1..2, 3..4, 5..6])
   end
 
   def test_that_it_intersects_range
@@ -372,13 +372,13 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_removes_left
-    range_set = RangeSet[] << (0..1) >> (-2..-1)
+    range_set = RangeSet[0..1] >> (-2..-1)
 
     assert_equal [0..1], range_set.to_a
   end
 
   def test_that_it_removes_right
-    range_set = RangeSet[] << (0..1) >> (2..3)
+    range_set = RangeSet[0..1] >> (2..3)
 
     assert_equal [0..1], range_set.to_a
   end
