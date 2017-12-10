@@ -4,6 +4,12 @@ require 'treemap-fork'
 class RangeSet
   include Enumerable
 
+  def self.[](*ranges)
+    RangeSet.new.tap do |range_set|
+      ranges.each {|range| range_set << range}
+    end
+  end
+
   def initialize(range_map = TreeMap.new)
     unless range_map.instance_of?(TreeMap) || range_map.instance_of?(TreeMap::BoundedMap)
       raise ArgumentError.new("invalid range_map #{range_map}")
