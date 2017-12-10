@@ -18,7 +18,7 @@ class RangeSet
     @range_map = range_map
 
     unless range_map.empty?
-      init_bounds
+      update_bounds
     end
   end
 
@@ -229,6 +229,8 @@ class RangeSet
 
   def clear
     @range_map.clear
+    @min = nil
+    @max = nil
   end
 
   def each
@@ -241,8 +243,9 @@ class RangeSet
 
   def copy(range_set)
     clear
-
     range_set.each {|range| put(range)}
+    @min = range_set.min
+    @max = range_set.max
 
     self
   end
@@ -276,6 +279,10 @@ class RangeSet
 
   def put(range)
     @range_map.put(range.min, range)
+  end
+
+  def put_and_update_bounds(range)
+    put(range)
 
     if @min.nil? && @max.nil?
       @min = range.min
@@ -363,14 +370,14 @@ class RangeSet
 
     # short cut
     unless within_or_touching_bounds?(range)
-      put(range)
+      put_and_update_bounds(range)
       return self
     end
 
     # short cut
     if overlapped_by?(range)
       clear
-      put(range)
+      put_and_update_bounds(range)
       return self
     end
 
@@ -406,9 +413,9 @@ class RangeSet
     # add range
 
     if !include_left && !include_right
-      put(range)
+      put_and_update_bounds(range)
     else
-      put(left_boundary..right_boundary)
+      put_and_update_bounds(left_boundary..right_boundary)
     end
 
     self
@@ -443,6 +450,7 @@ class RangeSet
     # right first since right might be same as left
     put(range.max..right_entry.value.max) if include_right
     put(left_entry.key..range.min) if include_left
+    update_bounds
 
     self
   end
@@ -485,6 +493,7 @@ class RangeSet
 
     put(range.min..[left_entry.value.max, range.max].min) if include_left
     put([right_entry.key, range.min].max..range.max) if include_right
+    update_bounds
 
     self
   end
@@ -507,6 +516,8 @@ class RangeSet
     end
 
     @range_map = intersection.range_map
+    @min = intersection.min
+    @max = intersection.max
 
     self
   end
@@ -566,6 +577,7 @@ class RangeSet
     ranges = map {|range| range.min + object..range.max + object}
     clear
     ranges.each {|range| put(range)}
+    update_bounds
 
     self
   end
@@ -593,9 +605,14 @@ class RangeSet
 
   private
 
-  def init_bounds
-    @min = @range_map.first_entry.value.min
-    @max = @range_map.last_entry.value.max
+  def update_bounds
+    if empty?
+      @min = nil
+      @max = nil
+    else
+      @min = @range_map.first_entry.value.min
+      @max = @range_map.last_entry.value.max
+    end
   end
 
 end

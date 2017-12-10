@@ -285,16 +285,38 @@ class RangeSetTest < Minitest::Test
     assert_nil RangeSet[].min
   end
 
-  def test_that_min_equals_range_min
+  def test_that_bounds_match_range
     range_set = RangeSet[1..2]
 
     assert_equal 1, range_set.min
+    assert_equal 2, range_set.max
   end
 
-  def test_that_max_equals_range_max
-    range_set = RangeSet[1..2]
+  def test_that_min_is_updated_after_remove
+    range_set = RangeSet[0..2]
 
+    range_set >> (0..1)
+
+    assert_equal 1, range_set.min
     assert_equal 2, range_set.max
+  end
+
+  def test_that_max_is_updated_after_remove
+    range_set = RangeSet[0..2]
+
+    range_set >> (1..2)
+
+    assert_equal 0, range_set.min
+    assert_equal 1, range_set.max
+  end
+
+  def test_that_bounds_are_nil_after_complete_removal
+    range_set = RangeSet[0..1]
+
+    range_set >> (0..1)
+
+    assert_nil range_set.min
+    assert_nil range_set.max
   end
 
   def test_ignore_empty_range
@@ -321,6 +343,7 @@ class RangeSetTest < Minitest::Test
     range_set << (0..3)
 
     assert_equal 1, range_set.count
+    assert_equal RangeSet[0..3], range_set
   end
 
   def test_that_it_adds_range_not_within_bounds
@@ -331,6 +354,7 @@ class RangeSetTest < Minitest::Test
     range_set << (3..4)
 
     assert_equal 2, range_set.count
+    assert_equal RangeSet[1..2, 3..4], range_set
   end
 
   def test_that_included_ranges_are_ignored
@@ -341,6 +365,7 @@ class RangeSetTest < Minitest::Test
     range_set << (3..4)
 
     assert_equal 3, range_set.count
+    assert_equal RangeSet[1..2, 3..4, 5..6], range_set
   end
 
   def test_that_it_adds_ranges
