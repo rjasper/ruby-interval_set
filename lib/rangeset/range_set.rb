@@ -220,6 +220,8 @@ class RangeSet
     string_io.string
   end
 
+  alias_method :inspect, :to_s
+
   protected
 
   def range_map
