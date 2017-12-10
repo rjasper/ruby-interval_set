@@ -6,6 +6,18 @@ class RangeSetTest < Minitest::Test
     assert RangeSet[]
   end
 
+  def test_that_bounds_are_initialized
+    tree_map = TreeMap.new
+    tree_map.put(0, 0..1)
+    tree_map.put(2, 2..3)
+
+    range_set = RangeSet.new(tree_map)
+
+    assert_equal 0, range_set.min
+    assert_equal 3, range_set.max
+    assert_equal 0..3, range_set.bounds
+  end
+
   def test_that_it_equals
     assert_equal RangeSet[], RangeSet[]
     assert_equal RangeSet[0..1], RangeSet[0..1]

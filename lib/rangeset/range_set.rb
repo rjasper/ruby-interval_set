@@ -16,6 +16,10 @@ class RangeSet
     end
 
     @range_map = range_map
+
+    unless range_map.empty?
+      init_bounds
+    end
   end
 
   def empty?
@@ -585,6 +589,13 @@ class RangeSet
     range_sets.each {|rs| add_range_set(rs)}
 
     self
+  end
+
+  private
+
+  def init_bounds
+    @min = @range_map.first_entry.value.min
+    @max = @range_map.last_entry.value.max
   end
 
 end
