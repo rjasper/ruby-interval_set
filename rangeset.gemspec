@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name          = "rangeset"
-  spec.version       = "0.1.0-RC2"
+  spec.version       = "0.1.0-RC3-SNAPSHOT"
   spec.authors       = ["Rico Jasper"]
   spec.email         = ["jasper.rico@gmail.com"]
 

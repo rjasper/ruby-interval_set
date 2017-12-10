@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rangeset (0.1.0.pre.RC2)
+    rangeset (0.1.0.pre.RC3.pre.SNAPSHOT)
       treemap (~> 1.0, >= 1.0.3)
 
 GEM
