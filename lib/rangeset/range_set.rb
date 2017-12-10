@@ -1,3 +1,4 @@
+require_relative 'version'
 require 'treemap-fork'
 
 class RangeSet

@@ -1,10 +1,11 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'rangeset/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "rangeset"
-  spec.version       = "0.1.0-RC3-SNAPSHOT"
+  spec.version       = RangeSet::VERSION
   spec.authors       = ["Rico Jasper"]
   spec.email         = ["jasper.rico@gmail.com"]
 
