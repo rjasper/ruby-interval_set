@@ -670,10 +670,22 @@ class RangeSetTest < Minitest::Test
     assert_equal [1..2, 3..4], range_set.convolve!(1).to_a
   end
 
+  def test_that_it_shifts_numeric
+    range_set = RangeSet.new << (0..1) << (2..3)
+
+    assert_equal [1..2, 3..4], range_set.shift(1).to_a
+  end
+
   def test_that_it_convolves_range
     range_set = RangeSet.new << (0..1) << (4..5) << (9..10)
 
     assert_equal [-1..7, 8..12], range_set.convolve!(-1..2).to_a
+  end
+
+  def test_that_it_buffers_range
+    range_set = RangeSet.new << (0..1) << (4..5) << (9..10)
+
+    assert_equal [-1..7, 8..12], range_set.buffer!(-1..2).to_a
   end
 
   def test_that_it_convolves_reversed_range

@@ -165,6 +165,22 @@ class RangeSet
 
   alias_method :*, :convolve
 
+  def shift!(object)
+    convolve_element!(object)
+  end
+
+  def shift(object)
+    clone.shift!(object)
+  end
+
+  def buffer!(range)
+    convolve_range!(range)
+  end
+
+  def buffer(range)
+    clone.buffer!(range)
+  end
+
   def clear
     @range_map.clear
   end
