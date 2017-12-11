@@ -33,7 +33,7 @@ class RangeSet
   end
 
   def bounds
-    empty? ? nil : min..max
+    empty? ? nil : min...max
   end
 
   def eql?(other)
