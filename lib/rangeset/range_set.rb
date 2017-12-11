@@ -59,11 +59,21 @@ class RangeSet
     end
   end
 
-  def superset?(object)
-    include?(object)
+  # whether all elements are present
+  def include?(object)
+    case object
+      when Range
+        include_range?(object)
+      when RangeSet
+        include_range_set?(object)
+      else
+        include_element?(object)
+    end
   end
 
-  alias_method :>=, :superset?
+  alias_method :===, :include?
+  alias_method :superset?, :include?
+  alias_method :>=, :include?
 
   def proper_superset?(object)
     !eql_set?(object) && superset?(object)
@@ -109,20 +119,6 @@ class RangeSet
 
     !empty? && range.min <= max && range.max >= min
   end
-
-  # whether all elements are present
-  def include?(object)
-    case object
-      when Range
-        include_range?(object)
-      when RangeSet
-        include_range_set?(object)
-      else
-        include_element?(object)
-    end
-  end
-
-  alias_method :===, :include?
 
   def intersect?(object)
     case object
