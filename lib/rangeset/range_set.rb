@@ -267,10 +267,6 @@ class RangeSet
     self
   end
 
-  def to_a
-    @range_map.values
-  end
-
   def to_s
     string_io = StringIO.new
 
