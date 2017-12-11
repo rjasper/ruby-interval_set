@@ -111,6 +111,7 @@ class RangeSetTest < Minitest::Test
     assert !range_set.overlapped_by?(2..3) # on right
     assert !range_set.overlapped_by?(1..1.5) # not right
     assert !range_set.overlapped_by?(1.5..2) # not left
+    assert !range_set.overlapped_by?(2..1) # reversed
   end
 
   def test_that_numeric_is_included
@@ -128,6 +129,11 @@ class RangeSetTest < Minitest::Test
     assert !range_set.include?(3)
   end
 
+  def test_that_empty_includes_reversed_range
+    # reversed ranges are interpreted as empty
+    assert RangeSet[].include?(1..0)
+  end
+
   def test_that_empty_does_not_include_range
     assert !RangeSet[].include?(0..1)
   end
@@ -140,6 +146,7 @@ class RangeSetTest < Minitest::Test
     assert range_set.include?(0..0.5)
     assert range_set.include?(0.25..0.75)
     assert range_set.include?(2..3)
+    assert range_set.include?(1..0)
   end
 
   def test_that_it_not_includes_range
@@ -261,6 +268,7 @@ class RangeSetTest < Minitest::Test
     assert !range_set.intersect?(-1..0)
     assert !range_set.intersect?(3..4)
     assert !range_set.intersect?(5..6)
+    assert !range_set.intersect?(1..0) # reversed range
   end
 
   def test_that_range_is_within_bounds
@@ -279,6 +287,7 @@ class RangeSetTest < Minitest::Test
 
     assert !range_set.within_bounds?(0..1) # on left
     assert !range_set.within_bounds?(2..3) # on right
+    assert !range_set.within_bounds?(1..0) # reversed
   end
 
   def test_that_empty_has_no_min
@@ -319,14 +328,16 @@ class RangeSetTest < Minitest::Test
     assert_nil range_set.max
   end
 
-  def test_ignore_empty_range
-    range_set = RangeSet[1..1]
+  def test_that_it_does_not_add_empty_range
+    range_set = RangeSet[]
+    range_set << (1..1)
 
-    assert range_set.empty?
+    assert_empty range_set
   end
 
-  def test_ignore_reversed_range
-    range_set = RangeSet[2..1]
+  def test_that_it_does_not_add_reversed_range
+    range_set = RangeSet[]
+    range_set << (1..0)
 
     assert range_set.empty?
   end
@@ -456,6 +467,20 @@ class RangeSetTest < Minitest::Test
     assert_empty range_set
   end
 
+  def test_that_it_does_not_remove_empty_range
+    range_set = RangeSet[0..1]
+    range_set >> (0..0)
+
+    assert_equal RangeSet[0..1], range_set
+  end
+
+  def test_that_it_does_not_remove_reversed_range
+    range_set = RangeSet[0..1]
+    range_set >> (1..0)
+
+    assert_equal RangeSet[0..1], range_set
+  end
+
   def test_that_it_removes_left
     range_set = RangeSet[0..1] >> (-2..-1)
 
@@ -555,6 +580,11 @@ class RangeSetTest < Minitest::Test
     assert_empty RangeSet[].intersect(0..1)
   end
 
+  def test_that_it_does_not_intersect_improper_range
+    assert_empty RangeSet[0..1] & (0..0)
+    assert_empty RangeSet[0..1] & (1..0)
+  end
+
   def test_that_it_intersects_left
     range_set = RangeSet[0..1]
 
@@ -629,6 +659,11 @@ class RangeSetTest < Minitest::Test
     assert_empty lhs.union(rhs)
   end
 
+  def test_that_improper_ranges_do_not_affect_union
+    assert_equal RangeSet[0..1], RangeSet[0..1] | (2..2)
+    assert_equal RangeSet[0..1], RangeSet[0..1] | (2..1)
+  end
+
   def test_that_it_unions_empty_lhs
     lhs = RangeSet[]
     rhs = RangeSet[0..1]
@@ -697,6 +732,11 @@ class RangeSetTest < Minitest::Test
     rhs = RangeSet[]
 
     assert_empty lhs.difference(rhs)
+  end
+
+  def test_that_improper_ranges_do_not_affect_difference
+    assert_equal RangeSet[0..1], RangeSet[0..1] - (2..2)
+    assert_equal RangeSet[0..1], RangeSet[0..1] - (2..1)
   end
 
   def test_that_it_differences_empty_lhs

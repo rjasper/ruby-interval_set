@@ -73,14 +73,20 @@ class RangeSet
   alias_method :<, :proper_subset?
 
   def overlapped_by?(range)
+    return false unless RangeSet::proper_range?(range)
+
     empty? || (range.min <= min && range.max >= max)
   end
 
   def within_bounds?(range)
+    return false unless RangeSet::proper_range?(range)
+
     !empty? && range.min < max && range.max > min
   end
 
   def within_or_touching_bounds?(range)
+    return false unless RangeSet::proper_range?(range)
+
     !empty? && range.min <= max && range.max >= min
   end
 
@@ -298,6 +304,7 @@ class RangeSet
   end
 
   def include_range?(range)
+    return true unless RangeSet::proper_range?(range)
     return false if empty? || !within_bounds?(range)
 
     # left.min <= range.min
@@ -364,7 +371,7 @@ class RangeSet
 
   def add_range(range)
     # ignore empty or reversed ranges
-    return self if range.first >= range.last
+    return self unless RangeSet::proper_range?(range)
 
     # short cut
     unless within_or_touching_bounds?(range)
@@ -537,9 +544,11 @@ class RangeSet
     return new_range_set if overlapped_by?(range)
     return new_range_set.copy(self) unless within_bounds?(range)
 
-    new_range_set.add_range_set(head_set(range.min))
-    new_range_set.add_range_set(tail_set(range.max))
-    new_range_set.remove_range(range)
+    if RangeSet::proper_range?(range)
+      new_range_set.add_range_set(head_set(range.min))
+      new_range_set.add_range_set(tail_set(range.max))
+      new_range_set.remove_range(range)
+    end
   end
 
   def difference_range_set(range_set)
@@ -611,6 +620,10 @@ class RangeSet
       @min = @range_map.first_entry.value.min
       @max = @range_map.last_entry.value.max
     end
+  end
+
+  def self.proper_range?(range)
+    range.first < range.last
   end
 
 end
