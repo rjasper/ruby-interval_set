@@ -17,9 +17,7 @@ class RangeSet
 
     @range_map = range_map
 
-    unless range_map.empty?
-      update_bounds
-    end
+    update_bounds
   end
 
   def empty?
