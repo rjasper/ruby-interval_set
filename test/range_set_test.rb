@@ -805,7 +805,7 @@ class RangeSetTest < Minitest::Test
   def test_that_it_convolves_numeric
     range_set = RangeSet[0..1, 2..3]
 
-    assert_equal RangeSet[1..2, 3..4], range_set.convolve!(1)
+    assert_equal RangeSet[1..2, 3..4], range_set * 1
   end
 
   def test_that_it_shifts_numeric
@@ -817,7 +817,7 @@ class RangeSetTest < Minitest::Test
   def test_that_it_convolves_range
     range_set = RangeSet[0..1, 4..5, 9..10]
 
-    assert_equal RangeSet[-1..7, 8..12], range_set.convolve!(-1..2)
+    assert_equal RangeSet[-1..7, 8..12], range_set * (-1..2)
   end
 
   def test_that_it_buffers_range
@@ -829,35 +829,35 @@ class RangeSetTest < Minitest::Test
   def test_that_it_convolves_reversed_range
     range_set = RangeSet[0..10, 20..22]
 
-    assert RangeSet[1..9] == range_set.convolve!(1..-1)
+    assert RangeSet[1..9] == range_set * (1..-1)
   end
 
   def test_that_it_convolves_range_sets
     lhs = RangeSet[0..1, 10..12]
     rhs = RangeSet[-2..1, 1..2]
 
-    assert_equal RangeSet[-2..3, 8..14], lhs.convolve!(rhs)
+    assert_equal RangeSet[-2..3, 8..14], lhs * rhs
   end
 
   def test_that_it_convolves_empty_range_sets
     lhs = RangeSet[]
     rhs = RangeSet[]
 
-    assert_empty lhs.convolve!(rhs)
+    assert_empty lhs * rhs
   end
 
   def test_that_it_convolves_empty_lhs_range_sets
     lhs = RangeSet[]
     rhs = RangeSet[-2..1, 1..2]
 
-    assert_empty lhs.convolve!(rhs)
+    assert_empty lhs * rhs
   end
 
   def test_that_it_convolves_empty_rhs_range_sets
     lhs = RangeSet[0..1, 10..12]
     rhs = RangeSet[]
 
-    assert_empty lhs.convolve!(rhs)
+    assert_empty lhs * rhs
   end
 
 end
