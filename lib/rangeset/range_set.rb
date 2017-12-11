@@ -75,18 +75,12 @@ class RangeSet
   alias_method :superset?, :include?
   alias_method :>=, :include?
 
-  def proper_superset?(object)
-    !eql_set?(object) && superset?(object)
-  end
-
-  alias_method :>, :proper_superset?
-
-  def subset?(object)
+  def included_by?(object)
     return true if empty?
 
     case object
       when Range
-        overlapped_by?(object)
+        included_by_range?(object)
       when RangeSet
         object.include_range_set?(self)
       else
@@ -94,19 +88,20 @@ class RangeSet
     end
   end
 
-  alias_method :<=, :subset?
+  alias_method :subset?, :included_by?
+  alias_method :<=, :included_by?
+
+  def proper_superset?(object)
+    !eql_set?(object) && superset?(object)
+  end
+
+  alias_method :>, :proper_superset?
 
   def proper_subset?(object)
     !eql_set?(object) && subset?(object)
   end
 
   alias_method :<, :proper_subset?
-
-  def overlapped_by?(range)
-    return false unless RangeSet::proper_range?(range)
-
-    empty? || (range.min <= min && range.max >= max)
-  end
 
   def within_bounds?(range)
     return false unless RangeSet::proper_range?(range)
@@ -339,6 +334,12 @@ class RangeSet
     range_set.all? {|range| include_range?(range)}
   end
 
+  def included_by_range?(range)
+    return false unless RangeSet::proper_range?(range)
+
+    empty? || (range.min <= min && range.max >= max)
+  end
+
   def intersect_range?(range)
     return false unless within_bounds?(range)
 
@@ -404,7 +405,7 @@ class RangeSet
     end
 
     # short cut
-    if overlapped_by?(range)
+    if included_by_range?(range)
       clear
       put_and_update_bounds(range)
       return self
@@ -500,7 +501,7 @@ class RangeSet
       return self
     end
 
-    return self if overlapped_by?(range)
+    return self if included_by_range?(range)
 
     # left_map.min < range.min
     left_map = @range_map.head_map(range.min, false)
@@ -553,7 +554,7 @@ class RangeSet
 
   def union_range(range)
     new_range_set = RangeSet.new
-    new_range_set.add_range_set(self) unless overlapped_by?(range)
+    new_range_set.add_range_set(self) unless included_by_range?(range)
     new_range_set.add_range(range)
   end
 
@@ -565,7 +566,7 @@ class RangeSet
   def difference_range(range)
     new_range_set = RangeSet.new
 
-    return new_range_set if overlapped_by?(range)
+    return new_range_set if included_by_range?(range)
     return new_range_set.copy(self) unless within_bounds?(range)
 
     if RangeSet::proper_range?(range)
@@ -589,7 +590,7 @@ class RangeSet
     new_range_set = RangeSet.new
 
     return new_range_set unless within_bounds?(range)
-    return new_range_set.copy(self) if overlapped_by?(range)
+    return new_range_set.copy(self) if included_by_range?(range)
 
     new_range_set.add(sub_set(range))
     new_range_set.intersect_range(range)

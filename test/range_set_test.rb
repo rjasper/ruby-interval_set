@@ -115,23 +115,23 @@ class RangeSetTest < Minitest::Test
     assert !clone.equal?(original)
   end
 
-  def test_that_range_overlaps
+  def test_that_range_includes_range_set
     range_set = RangeSet[1..2]
 
-    assert range_set.overlapped_by?(1..2) # both exact
-    assert range_set.overlapped_by?(0..2) # right exact
-    assert range_set.overlapped_by?(1..3) # left exact
-    assert range_set.overlapped_by?(0..3) # both extra
+    assert range_set.included_by?(1..2) # both exact
+    assert range_set.included_by?(0..2) # right exact
+    assert range_set.included_by?(1..3) # left exact
+    assert range_set.included_by?(0..3) # both extra
   end
 
-  def test_that_range_does_not_overlap
+  def test_that_range_does_not_include_range_set
     range_set = RangeSet[1..2]
 
-    assert !range_set.overlapped_by?(0..1) # on left
-    assert !range_set.overlapped_by?(2..3) # on right
-    assert !range_set.overlapped_by?(1..1.5) # not right
-    assert !range_set.overlapped_by?(1.5..2) # not left
-    assert !range_set.overlapped_by?(2..1) # reversed
+    assert !range_set.included_by?(0..1) # on left
+    assert !range_set.included_by?(2..3) # on right
+    assert !range_set.included_by?(1..1.5) # not right
+    assert !range_set.included_by?(1.5..2) # not left
+    assert !range_set.included_by?(2..1) # reversed
   end
 
   def test_that_numeric_is_included
