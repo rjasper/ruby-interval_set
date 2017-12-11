@@ -362,6 +362,10 @@ class RangeSetTest < Minitest::Test
     assert_nil range_set.max
   end
 
+  def test_that_empty_has_no_bounds
+    assert_nil RangeSet[].bounds
+  end
+
   def test_that_it_does_not_add_empty_range
     range_set = RangeSet[]
     range_set << (1..1)
