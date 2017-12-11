@@ -565,7 +565,7 @@ class RangeSet
     new_range_set = RangeSet.new
 
     return new_range_set unless within_bounds?(range)
-    return new_range_set.add_range(range) if overlapped_by?(range)
+    return new_range_set.copy(self) if overlapped_by?(range)
 
     new_range_set.add(sub_set(range))
     new_range_set.intersect_range(range)
