@@ -656,7 +656,7 @@ class RangeSetTest < Minitest::Test
     lhs = RangeSet[]
     rhs = RangeSet[]
 
-    assert_empty lhs.union(rhs)
+    assert_empty lhs | rhs
   end
 
   def test_that_improper_ranges_do_not_affect_union
@@ -668,63 +668,63 @@ class RangeSetTest < Minitest::Test
     lhs = RangeSet[]
     rhs = RangeSet[0..1]
 
-    assert_equal RangeSet[0..1], lhs.union(rhs)
+    assert_equal RangeSet[0..1], lhs | rhs
   end
 
   def test_that_it_unions_empty_rhs
     lhs = RangeSet[0..1]
     rhs = RangeSet[]
 
-    assert_equal RangeSet[0..1], lhs.union(rhs)
+    assert_equal RangeSet[0..1], lhs | rhs
   end
 
   def test_that_it_unions_left
-    assert_equal RangeSet[-2..-1, 0..1], RangeSet[0..1].union(-2..-1)
+    assert_equal RangeSet[-2..-1, 0..1], RangeSet[0..1] | (-2..-1)
   end
 
   def test_that_it_unions_right
-    assert_equal RangeSet[0..1, 2..3], RangeSet[0..1].union(2..3)
+    assert_equal RangeSet[0..1, 2..3], RangeSet[0..1] | (2..3)
   end
 
   def test_that_it_unions_tight_left
-    assert_equal RangeSet[-2..1], RangeSet[0..1].union(-2..0)
+    assert_equal RangeSet[-2..1], RangeSet[0..1] | (-2..0)
   end
 
   def test_that_it_unions_tight_right
-    assert_equal RangeSet[0..3], RangeSet[0..1].union(1..3)
+    assert_equal RangeSet[0..3], RangeSet[0..1] | (1..3)
   end
 
   def test_that_it_unions_left_overlap
-    assert_equal RangeSet[-2..1], RangeSet[0..1].union(-2..0.5)
+    assert_equal RangeSet[-2..1], RangeSet[0..1] | (-2..0.5)
   end
 
   def test_that_it_unions_right_overlap
-    assert_equal RangeSet[0..3], RangeSet[0..1].union(0.5..3)
+    assert_equal RangeSet[0..3], RangeSet[0..1] | (0.5..3)
   end
 
   def test_that_it_unions_inbetween
-    assert_equal RangeSet[0..1], RangeSet[0..1].union(0.25..0.75)
+    assert_equal RangeSet[0..1], RangeSet[0..1] | (0.25..0.75)
   end
 
   def test_that_it_unions_entire_set
-    assert_equal RangeSet[-1..2], RangeSet[0..1].union(-1..2)
+    assert_equal RangeSet[-1..2], RangeSet[0..1] | (-1..2)
   end
 
   def test_that_it_unions_bounds
-    assert_equal RangeSet[0..1], RangeSet[0..1].union(0..1)
+    assert_equal RangeSet[0..1], RangeSet[0..1] | (0..1)
   end
 
   def test_that_it_unions_range_set
     lhs = RangeSet[0..1, 4..5]
     rhs = RangeSet[2..3, 6..7]
 
-    assert_equal RangeSet[0..1, 2..3, 4..5, 6..7], lhs.union(rhs)
+    assert_equal RangeSet[0..1, 2..3, 4..5, 6..7], lhs | rhs
   end
 
   def test_that_it_unions_itself
     range_set = RangeSet[0..1]
 
-    assert_equal RangeSet[0..1], range_set.union(range_set)
+    assert_equal RangeSet[0..1], range_set | range_set
   end
 
   def test_that_it_differences_empty
