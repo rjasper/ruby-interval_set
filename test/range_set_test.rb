@@ -731,7 +731,7 @@ class RangeSetTest < Minitest::Test
     lhs = RangeSet[]
     rhs = RangeSet[]
 
-    assert_empty lhs.difference(rhs)
+    assert_empty lhs - rhs
   end
 
   def test_that_improper_ranges_do_not_affect_difference
@@ -743,63 +743,63 @@ class RangeSetTest < Minitest::Test
     lhs = RangeSet[]
     rhs = RangeSet[0..1]
 
-    assert_empty lhs.difference(rhs)
+    assert_empty lhs - rhs
   end
 
   def test_that_it_differences_empty_rhs
     lhs = RangeSet[0..1]
     rhs = RangeSet[]
 
-    assert_equal RangeSet[0..1], lhs.difference(rhs)
+    assert_equal RangeSet[0..1], lhs - rhs
   end
 
   def test_that_it_differences_left
-    assert_equal RangeSet[0..1], RangeSet[0..1].difference(-2..-1)
+    assert_equal RangeSet[0..1], RangeSet[0..1] - (-2..-1)
   end
 
   def test_that_it_differences_right
-    assert_equal RangeSet[0..1], RangeSet[0..1].difference(2..3)
+    assert_equal RangeSet[0..1], RangeSet[0..1] - (2..3)
   end
 
   def test_that_it_differences_tight_left
-    assert_equal RangeSet[0..1], RangeSet[0..1].difference(-2..0)
+    assert_equal RangeSet[0..1], RangeSet[0..1] - (-2..0)
   end
 
   def test_that_it_differences_tight_right
-    assert_equal RangeSet[0..1], RangeSet[0..1].difference(1..3)
+    assert_equal RangeSet[0..1], RangeSet[0..1] - (1..3)
   end
 
   def test_that_it_differences_left_overlap
-    assert_equal RangeSet[0.5..1], RangeSet[0..1].difference(-2..0.5)
+    assert_equal RangeSet[0.5..1], RangeSet[0..1] - (-2..0.5)
   end
 
   def test_that_it_differences_right_overlap
-    assert_equal RangeSet[0..0.5], RangeSet[0..1].difference(0.5..3)
+    assert_equal RangeSet[0..0.5], RangeSet[0..1] - (0.5..3)
   end
 
   def test_that_it_differences_inbetween
-    assert_equal RangeSet[0..0.25, 0.75..1], RangeSet[0..1].difference(0.25..0.75)
+    assert_equal RangeSet[0..0.25, 0.75..1], RangeSet[0..1] - (0.25..0.75)
   end
 
   def test_that_it_differences_entire_set
-    assert_empty RangeSet[0..1].difference(-1..2)
+    assert_empty RangeSet[0..1] - (-1..2)
   end
 
   def test_that_it_differences_bounds
-    assert_empty RangeSet[0..1].difference(0..1)
+    assert_empty RangeSet[0..1] - (0..1)
   end
 
   def test_that_it_differences_range_set
     lhs = RangeSet[0..2, 3..5]
     rhs = RangeSet[1..4, 6..7]
 
-    assert_equal RangeSet[0..1, 4..5], lhs.difference(rhs)
+    assert_equal RangeSet[0..1, 4..5], lhs - rhs
   end
 
   def test_that_it_differences_itself
     range_set = RangeSet[0..1]
 
-    assert_empty range_set.difference(range_set)
+    assert_empty range_set - range_set
   end
 
   def test_that_it_convolves_numeric
