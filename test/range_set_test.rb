@@ -308,20 +308,20 @@ class RangeSetTest < Minitest::Test
   def test_that_range_is_within_bounds
     range_set = RangeSet[1..2]
 
-    assert range_set.within_bounds?(1..2) # both exact
-    assert range_set.within_bounds?(0..2) # right exact
-    assert range_set.within_bounds?(1..3) # left exact
-    assert range_set.within_bounds?(0..3) # both extra
-    assert range_set.within_bounds?(1..1.5) # not right
-    assert range_set.within_bounds?(1.5..2) # not left
+    assert range_set.bounds_intersected_by?(1..2) # both exact
+    assert range_set.bounds_intersected_by?(0..2) # right exact
+    assert range_set.bounds_intersected_by?(1..3) # left exact
+    assert range_set.bounds_intersected_by?(0..3) # both extra
+    assert range_set.bounds_intersected_by?(1..1.5) # not right
+    assert range_set.bounds_intersected_by?(1.5..2) # not left
   end
 
   def test_that_range_is_not_within_bounds
     range_set = RangeSet[1..2]
 
-    assert !range_set.within_bounds?(0..1) # on left
-    assert !range_set.within_bounds?(2..3) # on right
-    assert !range_set.within_bounds?(1..0) # reversed
+    assert !range_set.bounds_intersected_by?(0..1) # on left
+    assert !range_set.bounds_intersected_by?(2..3) # on right
+    assert !range_set.bounds_intersected_by?(1..0) # reversed
   end
 
   def test_that_empty_has_no_min

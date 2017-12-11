@@ -103,13 +103,13 @@ class RangeSet
 
   alias_method :<, :proper_subset?
 
-  def within_bounds?(range)
+  def bounds_intersected_by?(range)
     return false unless RangeSet::proper_range?(range)
 
     !empty? && range.min < max && range.max > min
   end
 
-  def within_or_touching_bounds?(range)
+  def bounds_intersected_or_touched_by?(range)
     return false unless RangeSet::proper_range?(range)
 
     !empty? && range.min <= max && range.max >= min
@@ -318,7 +318,7 @@ class RangeSet
 
   def include_range?(range)
     return true unless RangeSet::proper_range?(range)
-    return false if empty? || !within_bounds?(range)
+    return false if empty? || !bounds_intersected_by?(range)
 
     # left.min <= range.min
     left_entry = @range_map.floor_entry(range.min)
@@ -329,7 +329,7 @@ class RangeSet
 
   def include_range_set?(range_set)
     return true if range_set == self || range_set.empty?
-    return false if empty? || !range_set.within_bounds?(bounds)
+    return false if empty? || !range_set.bounds_intersected_by?(bounds)
 
     range_set.all? {|range| include_range?(range)}
   end
@@ -341,7 +341,7 @@ class RangeSet
   end
 
   def intersect_range?(range)
-    return false unless within_bounds?(range)
+    return false unless bounds_intersected_by?(range)
 
     # left.min < range.max
     left_entry = @range_map.lower_entry(range.max)
@@ -351,7 +351,7 @@ class RangeSet
   end
 
   def intersect_range_set?(range_set)
-    return false if empty? || !within_bounds?(range_set.bounds)
+    return false if empty? || !bounds_intersected_by?(range_set.bounds)
 
     sub_set(range_set.bounds).any? {|range| intersect_range?(range)}
   end
@@ -399,7 +399,7 @@ class RangeSet
     return self unless RangeSet::proper_range?(range)
 
     # short cut
-    unless within_or_touching_bounds?(range)
+    unless bounds_intersected_or_touched_by?(range)
       put_and_update_bounds(range)
       return self
     end
@@ -460,7 +460,7 @@ class RangeSet
   end
 
   def remove_range(range)
-    return self unless within_bounds?(range)
+    return self unless bounds_intersected_by?(range)
 
     # range.min <= core.min <= range.max
     core = @range_map.sub_map(range.min, true, range.max, false)
@@ -496,7 +496,7 @@ class RangeSet
   end
 
   def intersect_range(range)
-    unless within_bounds?(range)
+    unless bounds_intersected_by?(range)
       clear
       return self
     end
@@ -531,7 +531,7 @@ class RangeSet
   def intersect_range_set(range_set)
     return self if range_set == self
 
-    if range_set.empty? || !within_bounds?(range_set.bounds)
+    if range_set.empty? || !bounds_intersected_by?(range_set.bounds)
       clear
       return self
     end
@@ -567,7 +567,7 @@ class RangeSet
     new_range_set = RangeSet.new
 
     return new_range_set if included_by_range?(range)
-    return new_range_set.copy(self) unless within_bounds?(range)
+    return new_range_set.copy(self) unless bounds_intersected_by?(range)
 
     if RangeSet::proper_range?(range)
       new_range_set.add_range_set(head_set(range.min))
@@ -582,14 +582,14 @@ class RangeSet
     return new_range_set if range_set == self || empty?
 
     new_range_set.copy(self)
-    new_range_set.remove_range_set(range_set) if !range_set.empty? && within_bounds?(range_set.bounds)
+    new_range_set.remove_range_set(range_set) if !range_set.empty? && bounds_intersected_by?(range_set.bounds)
     new_range_set
   end
 
   def intersection_range(range)
     new_range_set = RangeSet.new
 
-    return new_range_set unless within_bounds?(range)
+    return new_range_set unless bounds_intersected_by?(range)
     return new_range_set.copy(self) if included_by_range?(range)
 
     new_range_set.add(sub_set(range))
@@ -599,7 +599,7 @@ class RangeSet
   def intersection_range_set(range_set)
     new_range_set = RangeSet.new
 
-    return new_range_set if range_set.empty? || !within_bounds?(range_set.bounds)
+    return new_range_set if range_set.empty? || !bounds_intersected_by?(range_set.bounds)
 
     new_range_set.add_range_set(self)
     new_range_set.intersect_range_set(range_set.sub_set(bounds))
