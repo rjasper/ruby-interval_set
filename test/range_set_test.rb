@@ -23,14 +23,34 @@ class RangeSetTest < Minitest::Test
     assert_equal RangeSet[0..1], RangeSet[0..1]
     assert_equal RangeSet[0..1, 2..3], RangeSet[0..1, 2..3]
     assert_equal RangeSet[0..1, 1..2], RangeSet[0..2]
+
+    assert RangeSet[0..1, 2..3].eql_set?(RangeSet[0..1, 2..3])
   end
 
   def test_that_it_not_equals
     assert RangeSet[] != RangeSet[0..1]
     assert RangeSet[0..1] != RangeSet[]
     assert RangeSet[0..1] != RangeSet[0..2]
+
+    assert !RangeSet[0..1].eql_set?(RangeSet[0..2])
   end
-  
+
+  def test_that_it_does_not_equal_element
+    assert !RangeSet[].eql_set?(0)
+    assert !RangeSet[0..1].eql_set?(0)
+  end
+
+  def test_that_it_equals_ranges
+    assert RangeSet[].eql_set?(1..0)
+    assert RangeSet[0..1].eql_set?(0..1)
+  end
+
+  def test_that_it_does_not_equal_ranges
+    assert !RangeSet[].eql_set?(0..1)
+    assert !RangeSet[0..1].eql_set?(1..0)
+    assert !RangeSet[0..1].eql_set?(0..2)
+  end
+
   def test_that_empty_converts_to_string
     assert_equal '[]', RangeSet[].to_s
   end
@@ -195,6 +215,13 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_is_subset
+    assert RangeSet[].subset?(0)
+
+    assert RangeSet[].subset?(1..0)
+    assert RangeSet[].subset?(0..1)
+    assert RangeSet[0..1].subset?(0..1)
+    assert RangeSet[1..2].subset?(0..3)
+
     assert RangeSet[] <= RangeSet[]
     assert RangeSet[] <= RangeSet[0..1]
     assert RangeSet[0..1] <= RangeSet[0..1]
@@ -202,6 +229,11 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_is_not_subset
+    assert !RangeSet[0..1].subset?(2)
+
+    assert !RangeSet[0..1].subset?(1..0)
+    assert !RangeSet[0..1].subset?(2..3)
+
     assert !(RangeSet[0..1] <= RangeSet[])
     assert !(RangeSet[0..1] <= RangeSet[2..3])
   end
@@ -212,13 +244,15 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_is_not_proper_subset
-    assert !(RangeSet[] <RangeSet[])
+    assert !(RangeSet[] < RangeSet[])
     assert !(RangeSet[0..1] < RangeSet[])
     assert !(RangeSet[0..1] < RangeSet[0..1])
     assert !(RangeSet[0..1] < RangeSet[2..3])
   end
 
   def test_that_it_is_superset
+    assert RangeSet[0..1].superset?(0)
+
     assert RangeSet[] >= RangeSet[]
     assert RangeSet[0..1] >= RangeSet[]
     assert RangeSet[0..1] >= RangeSet[0..1]
@@ -823,13 +857,13 @@ class RangeSetTest < Minitest::Test
   def test_that_it_buffers_range
     range_set = RangeSet[0..1, 4..5, 9..10]
 
-    assert_equal RangeSet[-1..7, 8..12], range_set.buffer!(-1..2)
+    assert_equal RangeSet[-1..7, 8..12], range_set.buffer(-1..2)
   end
 
   def test_that_it_convolves_reversed_range
     range_set = RangeSet[0..10, 20..22]
 
-    assert RangeSet[1..9] == range_set * (1..-1)
+    assert_equal RangeSet[1..9], range_set * (1..-1)
   end
 
   def test_that_it_convolves_range_sets

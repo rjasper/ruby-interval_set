@@ -48,26 +48,46 @@ class RangeSet
 
   alias_method :==, :eql?
 
-  def superset?(other)
-    include_range_set?(other)
+  def eql_set?(object)
+    case object
+      when Range
+        eql_range?(object)
+      when RangeSet
+        eql?(object)
+      else
+        false
+    end
+  end
+
+  def superset?(object)
+    include?(object)
   end
 
   alias_method :>=, :superset?
 
-  def proper_superset?(other)
-    !eql?(other) && superset?(other)
+  def proper_superset?(object)
+    !eql_set?(object) && superset?(object)
   end
 
   alias_method :>, :proper_superset?
 
-  def subset?(other)
-    other.include_range_set?(self)
+  def subset?(object)
+    return true if empty?
+
+    case object
+      when Range
+        overlapped_by?(object)
+      when RangeSet
+        object.include_range_set?(self)
+      else
+        false
+    end
   end
 
   alias_method :<=, :subset?
 
-  def proper_subset?(other)
-    !eql?(other) && subset?(other)
+  def proper_subset?(object)
+    !eql_set?(object) && subset?(object)
   end
 
   alias_method :<, :proper_subset?
@@ -101,6 +121,8 @@ class RangeSet
         include_element?(object)
     end
   end
+
+  alias_method :===, :include?
 
   def intersect?(object)
     case object
@@ -335,6 +357,12 @@ class RangeSet
     return false if empty? || !within_bounds?(range_set.bounds)
 
     sub_set(range_set.bounds).any? {|range| intersect_range?(range)}
+  end
+
+  def eql_range?(range)
+    return true if empty? && !RangeSet::proper_range?(range)
+
+    count == 1 && bounds == range
   end
 
   def sub_set(range)
