@@ -830,8 +830,6 @@ class RangeSetTest < Minitest::Test
     range_set = RangeSet[0..10, 20..22]
 
     assert RangeSet[1..9] == range_set.convolve!(1..-1)
-
-    # assert_equal RangeSet[1..9], range_set.convolve!(1..-1)
   end
 
   def test_that_it_convolves_range_sets
