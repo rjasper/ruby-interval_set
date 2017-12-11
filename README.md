@@ -105,6 +105,12 @@ r.include?(0..0.5)      # -> true
 r.include?(RangeSet[0..1])              # -> true
 r.include?(RangeSet[0..1, 2..3])        # -> false
 r.include?(RangeSet[0..0.25, 0.75..1])  # -> true
+
+# The other way around
+RangeSet[0..1].included_by?(0..1)       # -> true 
+RangeSet[0..1, 2..3].included_by?(0..1) # -> false 
+RangeSet[0..0.25, 0.75..1].included_by?(0..1) # -> true 
+
 ```
 
 Check intersection:
@@ -172,6 +178,25 @@ RangeSet[0..2] <= RangeSet[0..2]  # -> true
 # A == B
 RangeSet[0..1] == RangeSet[0..1]  # -> true
 RangeSet[0..1] == RangeSet[1..2]  # -> false
+
+# Compare to singleton and ranges
+RangeSet[0..1].superset?(0)       # -> true 
+RangeSet[0..1].superset?(1)       # -> false 
+RangeSet[0..1].subset?(0)         # -> false 
+RangeSet[].subset?(0)             # -> true 
+
+RangeSet[0..3].superset?(1..2)    # -> true 
+RangeSet[1..2].subset?(0..3)      # -> false 
+```
+
+Use in case statements:
+
+```ruby
+case 2.5
+  when RangeSet[0..2] then 'between 0 and 2'
+  when RangeSet[2..3] then 'between 2 and 3'
+end
+# -> "between 2 and 3"
 ```
 
 Shift by a given amount:
