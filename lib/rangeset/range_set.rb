@@ -104,13 +104,13 @@ class RangeSet
   alias_method :<, :proper_subset?
 
   def bounds_intersected_by?(range)
-    return false unless RangeSet::proper_range?(range)
+    return false if RangeSet::range_empty?(range)
 
     !empty? && range.min < max && range.max > min
   end
 
   def bounds_intersected_or_touched_by?(range)
-    return false unless RangeSet::proper_range?(range)
+    return false if RangeSet::range_empty?(range)
 
     !empty? && range.min <= max && range.max >= min
   end
@@ -317,7 +317,7 @@ class RangeSet
   end
 
   def include_range?(range)
-    return true unless RangeSet::proper_range?(range)
+    return true if RangeSet::range_empty?(range)
     return false if empty? || !bounds_intersected_by?(range)
 
     # left.min <= range.min
@@ -335,7 +335,7 @@ class RangeSet
   end
 
   def included_by_range?(range)
-    return false unless RangeSet::proper_range?(range)
+    return false if RangeSet::range_empty?(range)
 
     empty? || (range.min <= min && range.max >= max)
   end
@@ -357,7 +357,7 @@ class RangeSet
   end
 
   def eql_range?(range)
-    return true if empty? && !RangeSet::proper_range?(range)
+    return true if empty? && RangeSet::range_empty?(range)
 
     count == 1 && bounds == range
   end
@@ -396,7 +396,7 @@ class RangeSet
 
   def add_range(range)
     # ignore empty or reversed ranges
-    return self unless RangeSet::proper_range?(range)
+    return self if RangeSet::range_empty?(range)
 
     # short cut
     unless bounds_intersected_or_touched_by?(range)
@@ -569,7 +569,7 @@ class RangeSet
     return new_range_set if included_by_range?(range)
     return new_range_set.copy(self) unless bounds_intersected_by?(range)
 
-    if RangeSet::proper_range?(range)
+    unless RangeSet::range_empty?(range)
       new_range_set.add_range_set(head_set(range.min))
       new_range_set.add_range_set(tail_set(range.max))
       new_range_set.remove_range(range)
@@ -647,8 +647,8 @@ class RangeSet
     end
   end
 
-  def self.proper_range?(range)
-    range.first < range.last
+  def self.range_empty?(range)
+    range.first >= range.last
   end
 
 end
