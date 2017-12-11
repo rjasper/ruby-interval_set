@@ -106,13 +106,13 @@ class RangeSet
   def bounds_intersected_by?(range)
     return false if RangeSet::range_empty?(range)
 
-    !empty? && range.min < max && range.max > min
+    !empty? && range.first < max && range.last > min
   end
 
   def bounds_intersected_or_touched_by?(range)
     return false if RangeSet::range_empty?(range)
 
-    !empty? && range.min <= max && range.max >= min
+    !empty? && range.first <= max && range.last >= min
   end
 
   def intersect?(object)
@@ -291,36 +291,36 @@ class RangeSet
   end
 
   def put(range)
-    @range_map.put(range.min, range)
+    @range_map.put(range.first, RangeSet::normalize_range(range))
   end
 
   def put_and_update_bounds(range)
     put(range)
 
     if @min.nil? && @max.nil?
-      @min = range.min
-      @max = range.max
+      @min = range.first
+      @max = range.last
     else
-      @min = [range.min, @min].min
-      @max = [range.max, @max].max
+      @min = [range.first, @min].min
+      @max = [range.last, @max].max
     end
   end
 
   def include_element?(object)
     floor_entry = @range_map.floor_entry(object)
 
-    !floor_entry.nil? && floor_entry.value.max > object
+    !floor_entry.nil? && floor_entry.value.last > object
   end
 
   def include_range?(range)
     return true if RangeSet::range_empty?(range)
     return false if empty? || !bounds_intersected_by?(range)
 
-    # left.min <= range.min
-    left_entry = @range_map.floor_entry(range.min)
+    # left.min <= range.first
+    left_entry = @range_map.floor_entry(range.first)
 
-    # left.max >= range.max
-    !left_entry.nil? && left_entry.value.max >= range.max
+    # left.max >= range.last
+    !left_entry.nil? && left_entry.value.last >= range.last
   end
 
   def include_range_set?(range_set)
@@ -333,17 +333,17 @@ class RangeSet
   def included_by_range?(range)
     return false if RangeSet::range_empty?(range)
 
-    empty? || (range.min <= min && range.max >= max)
+    empty? || (range.first <= min && range.last >= max)
   end
 
   def intersect_range?(range)
     return false unless bounds_intersected_by?(range)
 
-    # left.min < range.max
-    left_entry = @range_map.lower_entry(range.max)
+    # left.min < range.last
+    left_entry = @range_map.lower_entry(range.last)
 
-    # left.max > range.min
-    !left_entry.nil? && left_entry.value.max > range.min
+    # left.max > range.first
+    !left_entry.nil? && left_entry.value.last > range.first
   end
 
   def intersect_range_set?(range_set)
@@ -359,14 +359,14 @@ class RangeSet
   end
 
   def sub_set(range)
-    # left.min < range.min
-    left_entry = @range_map.lower_entry(range.min)
+    # left.min < range.first
+    left_entry = @range_map.lower_entry(range.first)
 
-    # left.max > range.min
-    include_left = !left_entry.nil? && left_entry.value.max > range.min
+    # left.max > range.first
+    include_left = !left_entry.nil? && left_entry.value.last > range.first
 
-    bound_min = include_left ? left_entry.value.min : range.min
-    sub_map = @range_map.sub_map(bound_min, range.max)
+    bound_min = include_left ? left_entry.value.first : range.first
+    sub_map = @range_map.sub_map(bound_min, range.last)
 
     RangeSet.new(sub_map)
   end
@@ -382,9 +382,9 @@ class RangeSet
     left_entry = @range_map.lower_entry(value)
 
     # left.max > value
-    include_left = !left_entry.nil? && left_entry.value.max > value
+    include_left = !left_entry.nil? && left_entry.value.last > value
 
-    bound_min = include_left ? left_entry.value.min : value
+    bound_min = include_left ? left_entry.value.first : value
     tail_map = @range_map.tail_map(bound_min)
 
     RangeSet.new(tail_map)
@@ -407,30 +407,30 @@ class RangeSet
       return self
     end
 
-    # range.min <= core.min <= range.max
-    core = @range_map.sub_map(range.min, true, range.max, true)
+    # range.first <= core.min <= range.last
+    core = @range_map.sub_map(range.first, true, range.last, true)
 
     # short cut if range already included
     if !core.empty? && core.first_entry == core.last_entry
       core_range = core.first_entry.value
 
-      return self if core_range.min == range.min && core_range.max == range.max
+      return self if core_range.first == range.first && core_range.last == range.last
     end
 
-    # left.min < range.min
-    left_entry = @range_map.lower_entry(range.min)
-    # right.min <= range.max
+    # left.min < range.first
+    left_entry = @range_map.lower_entry(range.first)
+    # right.min <= range.last
     right_entry = core.empty? ? left_entry : core.last_entry
 
     # determine boundaries
 
-    # left.max >= range.min
-    include_left = !left_entry.nil? && left_entry.value.max >= range.min
-    # right.max > range.max
-    include_right = !right_entry.nil? && right_entry.value.max > range.max
+    # left.max >= range.first
+    include_left = !left_entry.nil? && left_entry.value.last >= range.first
+    # right.max > range.last
+    include_right = !right_entry.nil? && right_entry.value.last > range.last
 
-    left_boundary = include_left ? left_entry.key : range.min
-    right_boundary = include_right ? right_entry.value.max : range.max
+    left_boundary = include_left ? left_entry.key : range.first
+    right_boundary = include_right ? right_entry.value.last : range.last
 
     @range_map.remove(left_boundary) if include_left
 
@@ -441,7 +441,7 @@ class RangeSet
     if !include_left && !include_right
       put_and_update_bounds(range)
     else
-      put_and_update_bounds(left_boundary..right_boundary)
+      put_and_update_bounds(left_boundary...right_boundary)
     end
 
     self
@@ -458,24 +458,24 @@ class RangeSet
   def remove_range(range)
     return self unless bounds_intersected_by?(range)
 
-    # range.min <= core.min <= range.max
-    core = @range_map.sub_map(range.min, true, range.max, false)
+    # range.first <= core.min <= range.last
+    core = @range_map.sub_map(range.first, true, range.last, false)
 
-    # left.min < range.min
-    left_entry = @range_map.lower_entry(range.min)
-    # right.min < range.max
+    # left.min < range.first
+    left_entry = @range_map.lower_entry(range.first)
+    # right.min < range.last
     right_entry = core.empty? ? left_entry : core.last_entry
 
     # left.max > range.to
-    include_left = !left_entry.nil? && left_entry.value.max > range.min
-    # right.max > range.max
-    include_right = !right_entry.nil? && right_entry.value.max > range.max
+    include_left = !left_entry.nil? && left_entry.value.last > range.first
+    # right.max > range.last
+    include_right = !right_entry.nil? && right_entry.value.last > range.last
 
     core.keys.each {|key| @range_map.remove(key)}
 
     # right first since right might be same as left
-    put(range.max..right_entry.value.max) if include_right
-    put(left_entry.key..range.min) if include_left
+    put(range.last...right_entry.value.last) if include_right
+    put(left_entry.key...range.first) if include_left
     update_bounds
 
     self
@@ -499,26 +499,26 @@ class RangeSet
 
     return self if included_by_range?(range)
 
-    # left_map.min < range.min
-    left_map = @range_map.head_map(range.min, false)
-    # right_map.min >= range.max
-    right_map = @range_map.tail_map(range.max, true)
+    # left_map.min < range.first
+    left_map = @range_map.head_map(range.first, false)
+    # right_map.min >= range.last
+    right_map = @range_map.tail_map(range.last, true)
 
-    # left.min < range.min
+    # left.min < range.first
     left_entry = left_map.last_entry
-    # right.min < range.max
-    right_entry = @range_map.lower_entry(range.max)
+    # right.min < range.last
+    right_entry = @range_map.lower_entry(range.last)
 
-    # left.max > range.min
-    include_left = !left_entry.nil? && left_entry.value.max > range.min
+    # left.max > range.first
+    include_left = !left_entry.nil? && left_entry.value.last > range.first
     # right.max > right.max
-    include_right = !right_entry.nil? && right_entry.value.max > range.max
+    include_right = !right_entry.nil? && right_entry.value.last > range.last
 
     left_map.keys.each {|key| @range_map.remove(key)}
     right_map.keys.each {|key| @range_map.remove(key)}
 
-    put(range.min..[left_entry.value.max, range.max].min) if include_left
-    put([right_entry.key, range.min].max..range.max) if include_right
+    put(range.first...[left_entry.value.last, range.last].min) if include_left
+    put([right_entry.key, range.first].max...range.last) if include_right
     update_bounds
 
     self
@@ -566,8 +566,8 @@ class RangeSet
     return new_range_set.copy(self) unless bounds_intersected_by?(range)
 
     unless RangeSet::range_empty?(range)
-      new_range_set.add_range_set(head_set(range.min))
-      new_range_set.add_range_set(tail_set(range.max))
+      new_range_set.add_range_set(head_set(range.first))
+      new_range_set.add_range_set(tail_set(range.last))
       new_range_set.remove_range(range)
     end
   end
@@ -602,7 +602,7 @@ class RangeSet
   end
 
   def convolve_element!(object)
-    ranges = map {|range| range.min + object..range.max + object}
+    ranges = map {|range| range.first + object...range.last + object}
     clear
     ranges.each {|range| put(range)}
     update_bounds
@@ -612,7 +612,7 @@ class RangeSet
 
   def convolve_range!(range)
     ranges = map do |r|
-      r.min + range.first..r.max + range.last
+      r.first + range.first...r.last + range.last
     end.select do |r|
       r.first < r.last
     end
@@ -638,13 +638,17 @@ class RangeSet
       @min = nil
       @max = nil
     else
-      @min = @range_map.first_entry.value.min
-      @max = @range_map.last_entry.value.max
+      @min = @range_map.first_entry.value.first
+      @max = @range_map.last_entry.value.last
     end
   end
 
   def self.range_empty?(range)
     range.first >= range.last
+  end
+
+  def self.normalize_range(range)
+    range.exclude_end? ? range : range.first...range.last
   end
 
 end
