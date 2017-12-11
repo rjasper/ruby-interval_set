@@ -577,7 +577,7 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_intersects_empty
-    assert_empty RangeSet[].intersect(0..1)
+    assert_empty RangeSet[] & (0..1)
   end
 
   def test_that_it_does_not_intersect_improper_range
@@ -588,68 +588,68 @@ class RangeSetTest < Minitest::Test
   def test_that_it_intersects_left
     range_set = RangeSet[0..1]
 
-    assert_empty range_set.intersect(-2..-1)
+    assert_empty range_set & (-2..-1)
   end
 
   def test_that_it_intersects_right
     range_set = RangeSet[0..1]
 
-    assert_empty range_set.intersect(2..3)
+    assert_empty range_set & (2..3)
   end
 
   def test_that_it_intersects_tight_left
     range_set = RangeSet[0..1]
 
-    assert_empty range_set.intersect(-2..0)
+    assert_empty range_set & (-2..0)
   end
 
   def test_that_it_intersects_tight_right
     range_set = RangeSet[0..1]
 
-    assert_empty range_set.intersect(1..3)
+    assert_empty range_set & (1..3)
   end
 
   def test_that_it_intersects_left_overlap
     range_set = RangeSet[0..1]
 
-    assert_equal RangeSet[0..0.5], range_set.intersect(-2..0.5)
+    assert_equal RangeSet[0..0.5], range_set & (-2..0.5)
   end
 
   def test_that_it_intersects_right_overlap
     range_set = RangeSet[0..1]
 
-    assert_equal RangeSet[0.5..1], range_set.intersect(0.5..3)
+    assert_equal RangeSet[0.5..1], range_set & (0.5..3)
   end
 
   def test_that_it_intersects_inbetween
     range_set = RangeSet[0..1]
 
-    assert_equal RangeSet[0.25..0.75], range_set.intersect(0.25..0.75)
+    assert_equal RangeSet[0.25..0.75], range_set & (0.25..0.75)
   end
 
   def test_that_it_intersects_entire_set
     range_set = RangeSet[0..1]
 
-    assert_equal RangeSet[0..1], range_set.intersect(-1..2)
+    assert_equal RangeSet[0..1], range_set & (-1..2)
   end
 
   def test_that_it_intersects_bounds
     range_set = RangeSet[0..1]
 
-    assert_equal RangeSet[0..1], range_set.intersect(0..1)
+    assert_equal RangeSet[0..1], range_set & (0..1)
   end
 
   def test_that_it_intersects_range_set
     range_set1 = RangeSet[0..2, 3..5]
     range_set2 = RangeSet[1..4, 6..7]
 
-    assert_equal RangeSet[1..2, 3..4], range_set1.intersect(range_set2)
+    assert_equal RangeSet[1..2, 3..4], range_set1 & range_set2
   end
 
   def test_that_it_intersects_itself
     range_set = RangeSet[0..1, 2..3]
 
-    assert_equal RangeSet[0..1, 2..3], range_set.intersect(range_set)
+    assert_equal RangeSet[0..1, 2..3], range_set & range_set
   end
 
   def test_that_it_unions_empty
