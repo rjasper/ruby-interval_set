@@ -1,15 +1,30 @@
 require_relative 'version'
 require 'treemap-fork'
 
+# RangeSet implements a set of sorted non-overlapping ranges.
+# A range's start is always interpreted as inclusive while the end is exclusive
 class RangeSet
   include Enumerable
 
+  # Builds a new RangeSet from the supplied ranges. Overlapping ranges will be merged.
+  #   RangeSet[]                # -> []
+  #   RangeSet[0...1]           # -> [0...1]
+  #   RangeSet[0...1, 2...3]    # -> [0...1, 2...3]
+  #   RangeSet[0...1, 1...2]    # -> [0...2]
+  #
+  #   array = [0...1, 2...3]
+  #   RangeSet[*array]          # -> [0...1, 2...3]
+  #
+  # @param ranges [Range[]] a list of ranges to be added to the new Rangeset
+  # @return [RangeSet] a new RangeSet containing the supplied ranges.
   def self.[](*ranges)
     RangeSet.new.tap do |range_set|
       ranges.each {|range| range_set << range}
     end
   end
 
+  # Returns an empty instance of RangeSet.
+  # @param range_map [TreeMap] a TreeMap of ranges. For internal use only.
   def initialize(range_map = TreeMap.new)
     unless range_map.instance_of?(TreeMap) || range_map.instance_of?(TreeMap::BoundedMap)
       raise ArgumentError.new("invalid range_map #{range_map}")
@@ -20,22 +35,47 @@ class RangeSet
     update_bounds
   end
 
+  # Returns +true+ if this RangeSet contains no ranges.
   def empty?
     @range_map.empty?
   end
 
+  # Returns the lower bound of this RangeSet.
+  #
+  #   RangeSet[0...1, 2...3].min  # -> 0
+  #   RangeSet[].min              # -> nil
+  #
+  # @return the lower bound or +nil+ if empty.
   def min
     @min
   end
 
+  # Returns the upper bound of this RangeSet.
+  #
+  #   RangeSet[0...1, 2...3].max  # -> 3
+  #   RangeSet[].max              # -> nil
+  #
+  # @return the upper bound or +nil+ if empty.
   def max
     @max
   end
 
+  # Returns the bounds of this RangeSet.
+  #
+  #   RangeSet[0...1, 2...3].bounds # -> 0...3
+  #   RangeSet[].bounds             # -> nil
+  #
+  # @return [Range] a range from lower to upper bound.
   def bounds
     empty? ? nil : min...max
   end
 
+  # Returns +true+ if two RangeSets are equal.
+  #
+  #   RangeSet[0...1] == RangeSet[0...1]  # -> true
+  #   RangeSet[0...1] == RangeSet[1...2]  # -> false
+  #
+  # @param other [RangeSet] the other RangeSet.
   def eql?(other)
     return false if count != other.count
     return false if bounds != other.bounds
@@ -48,26 +88,53 @@ class RangeSet
 
   alias_method :==, :eql?
 
-  def eql_set?(object)
-    case object
+  # Returns +true+ if the other object represents a equal
+  # set of ranges as this RangeSet. Singletons will always evaluate to +false+.
+  #
+  #   RangeSet[1...2].eql_set?(1)               # -> false
+  #   RangeSet[1...2].eql_set?(1...2)           # -> true
+  #   RangeSet[1...2].eql_set?(RangeSet[1...2]) # -> true
+  #
+  # @param other [Range | RangeSet | Object] the other object.
+  def eql_set?(other)
+    case other
       when Range
-        eql_range?(object)
+        eql_range?(other)
       when RangeSet
-        eql?(object)
+        eql?(other)
       else
         false
     end
   end
 
-  # whether all elements are present
-  def include?(object)
-    case object
+  # Returns +true+ if this RangeSet contains all elements
+  # contained by the other object.
+  #
+  #   r = RangeSet[0...1]         # -> [0...1]
+  #
+  #   r.include?(0)               # -> true
+  #   r.include?(0.5)             # -> true
+  #   r.include?(1)               # -> false ; a range's end is exclusive
+  #
+  #   # You can also supply ranges
+  #   r.include?(0...1)           # -> true
+  #   r.include?(0...2)           # -> false ; the whole range must be included
+  #   r.include?(0...0.5)         # -> true
+  #
+  #   # ... and range sets as well
+  #   r.include?(RangeSet[0...1])               # -> true
+  #   r.include?(RangeSet[0...1, 2...3])        # -> false
+  #   r.include?(RangeSet[0...0.25, 0.75...1])  # -> true
+  #
+  # @param other [Range | RangeSet | Object] the other object.
+  def include?(other)
+    case other
       when Range
-        include_range?(object)
+        include_range?(other)
       when RangeSet
-        include_range_set?(object)
+        include_range_set?(other)
       else
-        include_element?(object)
+        include_element?(other)
     end
   end
 
@@ -75,14 +142,22 @@ class RangeSet
   alias_method :superset?, :include?
   alias_method :>=, :include?
 
-  def included_by?(object)
+  # Returns +true+ if all elements of this RangeSet are
+  # included by the other object.
+  #
+  #   RangeSet[0...1].included_by?(0...1)               # -> true
+  #   RangeSet[0...1, 2...3].included_by?(0...1)        # -> false
+  #   RangeSet[0...0.25, 0.75...1].included_by?(0...1)  # -> true
+  #
+  # @param other [Range | RangeSet | Object] the other object.
+  def included_by?(other)
     return true if empty?
 
-    case object
+    case other
       when Range
-        included_by_range?(object)
+        included_by_range?(other)
       when RangeSet
-        object.include_range_set?(self)
+        other.include_range_set?(self)
       else
         false
     end
@@ -91,173 +166,412 @@ class RangeSet
   alias_method :subset?, :included_by?
   alias_method :<=, :included_by?
 
-  def proper_superset?(object)
-    !eql_set?(object) && superset?(object)
+  # Returns +true+ if this RangeSet is a proper superset of the other.
+  #
+  #   RangeSet[0...2] > RangeSet[0...1] # -> true
+  #   RangeSet[0...2] > RangeSet[0...2] # -> false
+  #   RangeSet[0...2] > RangeSet[1...3] # -> false
+  #
+  #   # Compare to singletons
+  #   RangeSet[0...1].superset?(0)      # -> true
+  #   RangeSet[0...1].superset?(1)      # -> false ; a range's end is exclusive
+  #
+  #   # Compare to ranges
+  #   RangeSet[0...3].superset?(1...2)  # -> true
+  #
+  # @param other [Range | RangeSet | Object] the other object.
+  def proper_superset?(other)
+    !eql_set?(other) && superset?(other)
   end
 
   alias_method :>, :proper_superset?
 
-  def proper_subset?(object)
-    !eql_set?(object) && subset?(object)
+  # Return +true+ if this RangeSet is a proper subset of the other.
+  # The result for a singleton will only be +true+ if this RangeSet is empty.
+  #
+  #   RangeSet[0...1] < RangeSet[0...2] # -> true
+  #   RangeSet[1...3] < RangeSet[0...2] # -> false
+  #   RangeSet[1...3] < RangeSet[0...2] # -> false
+  #
+  #   # Compare to singletons
+  #   RangeSet[0...1].subset?(0)        # -> false
+  #   RangeSet[].subset?(0)             # -> true
+  #
+  #   # Compare to ranges
+  #   RangeSet[1...2].subset?(0...3)    # -> false
+  #
+  # @param other [Range | RangeSet | Object] the other object.
+  def proper_subset?(other)
+    !eql_set?(other) && subset?(other)
   end
 
   alias_method :<, :proper_subset?
 
+  # Returns +true+ if the given range has common elements with the
+  # bounding range of this RangeSet.
+  #
+  #   RangeSet[1...2].bounds_intersected_by?(2...3)         # -> false
+  #   RangeSet[1...2, 5...6].bounds_intersected_by?(3...4)  # -> true
+  #
+  # @param range [Range]
   def bounds_intersected_by?(range)
     return false if RangeSet::range_empty?(range)
 
     !empty? && range.first < max && range.last > min
   end
 
+  # Returns +true+ if the given range has common elements with the
+  # bounding range or the bounds of this RangeSet.
+  #
+  #   RangeSet[1...2].bounds_intersected_or_touched_by?(2...3)        # -> true
+  #   RangeSet[1...2].bounds_intersected_or_touched_by?(3...4)        # -> false
+  #   RangeSet[1...2, 5...6].bounds_intersected_or_touched_by?(3...4) # -> true
+  #
+  # @param range [Range]
   def bounds_intersected_or_touched_by?(range)
     return false if RangeSet::range_empty?(range)
 
     !empty? && range.first <= max && range.last >= min
   end
 
-  def intersect?(object)
-    case object
+  # Returns +true+ if the given object has any common elements with
+  # this RangeSet.
+  #
+  #   r = RangeSet[0...1]         # -> [0...1]
+  #
+  #   # For a single element intersect? behaves exactly like include?
+  #   r.intersect?(0)             # -> true
+  #   r.intersect?(0.5)           # -> true
+  #   r.intersect?(1)             # -> false
+  #
+  #   # Ranges only need a single common element with the range set
+  #   r.intersect?(0...1)         # -> true
+  #   r.intersect?(0...2)         # -> true
+  #   r.intersect?(1...2)         # -> false ; the start of a range is inclusive but the end exclusive
+  #
+  #   # The same applies for range sets
+  #   r.intersect?(RangeSet[0...1])         # -> true
+  #   r.intersect?(RangeSet[0...1, 2...3])  # -> true
+  #   r.intersect?(RangeSet[2...3])         # -> false
+  #
+  # @param other [Range | RangeSet | #<=>] the other object.
+  def intersect?(other)
+    case other
       when Range
-        intersect_range?(object)
+        intersect_range?(other)
       when RangeSet
-        intersect_range_set?(object)
+        intersect_range_set?(other)
       else
-        include_element?(object)
+        include_element?(other)
     end
   end
 
+  # Counts the number of ranges contained by this RangeSet.
+  #
+  #   r = RangeSet[]              # -> []
+  #   r.count                     # -> 0
+  #   r << (0...1)                # -> [0...1]
+  #   r.count                     # -> 1
+  #   r << (2...3)                # -> [0...1, 2...3]
+  #   r.count                     # -> 2
+  #   r << (1...2)                # -> [0...3]
+  #   r.count                     # -> 1
+  #
+  # @return [Integer] the number of ranges.
   def count
     @range_map.count
   end
 
-  def add(object)
-    case object
+  # Adds the other object's elements to this RangeSet.
+  # The result is stored in this RangeSet.
+  #
+  #   RangeSet.new.add(0...1)     # -> [0...1]
+  #   RangeSet.new << (0...1)     # -> [0...1]
+  #
+  #   r = RangeSet.new            # -> []
+  #   r << (0...1)                # -> [0...1]
+  #   r << (2...3)                # -> [0...1, 2...3]
+  #   r << (1...2)                # -> [0...3]
+  #   r << (-1...4)               # -> [-1...4]
+  #
+  # @param other [Range, RangeSet] the other object.
+  # @return [RangeSet] self.
+  def add(other)
+    case other
       when Range
-        add_range(object)
+        add_range(other)
       when RangeSet
-        add_range_set(object)
+        add_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{object}")
+        raise ArgumentError.new("unexpected object #{other}")
     end
   end
 
   alias_method :<<, :add
   alias_method :union!, :add
 
-  def remove(object)
-    case object
+  # Removes the other object's elements from this RangeSet.
+  # The result is stored in this RangeSet.
+  #
+  #   r = RangeSet[0...10]        # -> [0...10]
+  #   r.remove(0...2)             # -> [8...10]
+  #   r >> (2...8)                # -> [0...2, 8...10]
+  #
+  # @param other [Range, RangeSet] the other object.
+  # @return [RangeSet] self.
+  def remove(other)
+    case other
       when Range
-        remove_range(object)
+        remove_range(other)
       when RangeSet
-        remove_range_set(object)
+        remove_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{object}")
+        raise ArgumentError.new("unexpected object #{other}")
     end
   end
 
   alias_method :>>, :remove
   alias_method :difference!, :remove
 
-  def intersect(object)
-    case object
+  # Intersects the other object's elements with this RangeSet.
+  # The result is stored in this RangeSet.
+  #
+  #   r = RangeSet[0...2, 3...5].intersect(1...5) # -> [1...2, 3...5]
+  #   r                                           # -> [1...2, 3...5]
+  #
+  # @param other [Range, RangeSet] the other object.
+  # @return [RangeSet] self.
+  def intersect(other)
+    case other
       when Range
-        intersect_range(object)
+        intersect_range(other)
       when RangeSet
-        intersect_range_set(object)
+        intersect_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{object}")
+        raise ArgumentError.new("unexpected object #{other}")
     end
   end
 
   alias_method :intersection!, :intersect
 
-  def intersection(object)
-    case object
+  # Intersects the other object's elements with this RangeSet.
+  # The result is stored in a new RangeSet.
+  #
+  #   RangeSet[0...2, 3...5] & RangeSet[1...4, 5...6] # -> [1...2, 3...4]
+  #
+  # @param other [Range, RangeSet] the other object.
+  # @return [RangeSet] a new RangeSet containing the intersection.
+  def intersection(other)
+    case other
       when Range
-        intersection_range(object)
+        intersection_range(other)
       when RangeSet
-        intersection_range_set(object)
+        intersection_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{object}")
+        raise ArgumentError.new("unexpected object #{other}")
     end
   end
 
   alias_method :&, :intersection
 
-  def union(object)
-    case object
+  # Joins the other object's elements with this RangeSet.
+  # The result is stored in a new RangeSet.
+  #
+  #   RangeSet[0...1, 2...3] | RangeSet[1...2, 4...5] # -> [0...3, 4...5]
+  #
+  # Note that using +add+ or +union!+ is more efficient than
+  # <code>+=</code> or <code>|=</code>.
+  #
+  # @param other [Range, RangeSet] the other object.
+  # @return [RangeSet] a new RangeSet containing the union.
+  def union(other)
+    case other
       when Range
-        union_range(object)
+        union_range(other)
       when RangeSet
-        union_range_set(object)
+        union_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{object}")
+        raise ArgumentError.new("unexpected object #{other}")
     end
   end
 
   alias_method :|, :union
   alias_method :+, :union
 
-  def difference(object)
-    case object
+  # Subtracts the other object's elements from this RangeSet.
+  # The result is stored in a new RangeSet.
+  #
+  #   RangeSet[0...2, 3...5] - RangeSet[1...4, 5...6] # -> [0...1, 4...5]
+  #
+  # Note that using +remove+ or +difference!+ is more efficient
+  # than <code>-=</code>.
+  #
+  # @param other [Range, RangeSet] the other object.
+  # @return [RangeSet] a new RangeSet containing the difference.
+  def difference(other)
+    case other
       when Range
-        difference_range(object)
+        difference_range(other)
       when RangeSet
-        difference_range_set(object)
+        difference_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{object}")
+        raise ArgumentError.new("unexpected object #{other}")
     end
   end
 
   alias_method :-, :difference
 
-  def convolve!(object)
-    case object
+  # Convolves the other object's elements with this RangeSet.
+  # The result is stored in this RangeSet.
+  #
+  # The result will contain all elements which can be obtained by adding
+  # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
+  #
+  #   # Convolve with a singleton (effectively shifts the set)
+  #   RangeSet[0...1].convolve!(1)      # -> [1...2]
+  #
+  #   # Convolve with a range (effectively buffers the set)
+  #   RangeSet[0...4].convolve!(-1...2) # -> [-1...6]
+  #
+  #   # Convolving with reversed ranges is also possible.
+  #   RangeSet[1...2].convolve!(-1...2) # -> [0...4]
+  #   RangeSet[0...4].convolve!(1...-2) # -> [1...2]
+  #
+  #   # Convolve with a range set
+  #   RangeSet[0...1, 10...12].convolve!(RangeSet[-2...1, 1...2]) # -> [-2...3, 8...14]
+  #
+  # @param other [Range | RangeSet | Object] the other object.
+  # @return [RangeSet] self
+  def convolve!(other)
+    case other
       when Range
-        convolve_range!(object)
+        convolve_range!(other)
       when RangeSet
-        convolve_range_set!(object)
+        convolve_range_set!(other)
       else
-        convolve_element!(object)
+        convolve_element!(other)
     end
   end
 
-  def convolve(object)
-    clone.convolve!(object)
+  # Convolves the other object's elements with this RangeSet.
+  # The result is stored in a new RangeSet.
+  #
+  # The result will contain all elements which can be obtained by adding
+  # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
+  #   # Convolve with a singleton (effectively shifts the set)
+  #   RangeSet[0...1] * 1         # -> [1...2]
+  #
+  #   # Convolve with a range (effectively buffers the set)
+  #   RangeSet[0...4] * (-1...2)  # -> [-1...6]
+  #
+  #   # Convolving with reversed ranges is also possible.  However,
+  #   # the definition above doesn't apply anymore. Unfortunately,
+  #   # I didn't come up with a better definition yet :(
+  #   RangeSet[1...2] * (-1...2)  # -> [0...4]
+  #   RangeSet[0...4] * (1...-2)  # -> [1...2]
+  #
+  #   # Convolve with a range set
+  #   RangeSet[0...1, 10...12] * RangeSet[-2...1, 1...2]  # -> [-2...3, 8...14]
+  #
+  # @param other [Range | RangeSet | Object] the other object.
+  # @return [RangeSet] a new RangeSet containing the convolution.
+  def convolve(other)
+    clone.convolve!(other)
   end
 
   alias_method :*, :convolve
 
-  def shift!(object)
-    convolve_element!(object)
+  # Shifts this RangeSet by the given amount.
+  # The result is stored in this RangeSet.
+  #
+  #   RangeSet[0...1].shift(1)    # -> [1...2]
+  #
+  # Note that +shift(0)+ will not be optimized since RangeSet does
+  # not assume numbers as element type.
+  #
+  # @param amount [Object]
+  # @return [RangeSet] self.
+  def shift!(amount)
+    convolve_element!(amount)
   end
 
-  def shift(object)
-    clone.shift!(object)
+  # Shifts this RangeSet by the given amount.
+  # The result is stored in a new RangeSet.
+  #
+  #   RangeSet[0...1].shift!(1)   # -> [1...2]
+  #
+  # Note that +shift!(0)+ will not be optimized since RangeSet does
+  # not assume numbers as element type.
+  #
+  # @param amount [Object]
+  # @return [RangeSet] a new RangeSet shifted by +amount+.
+  def shift(amount)
+    clone.shift!(amount)
   end
 
+  # Buffers this RangeSet by the given range.
+  # The result is stored in this RangeSet.
+  #
+  # The values of each range will be shifted by the values specified
+  # by the given range.
+  #
+  #   RangeSet[1...2].buffer(-1...2)      # -> [0...4]
+  #
+  #   # reverse ranges will remove buffer
+  #   RangeSet[0...4].buffer(1...-2)      # -> [1...2]
+  #   RangeSet[1...2].buffer(0.5...-0.5)  # -> []
+  #
+  # @param range [Range]
+  # @return [RangeSet] self.
   def buffer!(range)
     convolve_range!(range)
   end
 
+  # Buffers this RangeSet by the given range.
+  # The result is stored in a new RangeSet.
+  #
+  # The values of each range will be shifted by the values specified
+  # by the given range.
+  #
+  #   RangeSet[1...2].buffer!(-1...2)      # -> [0...4]
+  #
+  #   # reverse ranges will remove buffer
+  #   RangeSet[0...4].buffer!(1...-2)      # -> [1...2]
+  #   RangeSet[1...2].buffer!(0.5...-0.5)  # -> []
+  #
+  # @param range [Range]
+  # @return [RangeSet] a new RangeSet containing the buffered ranges.
   def buffer(range)
     clone.buffer!(range)
   end
 
+  # Removes all elements from this RangeSet.
+  # @return [RangeSet] self.
   def clear
     @range_map.clear
     @min = nil
     @max = nil
+
+    self
   end
 
+  # Iterates over all ranges of this set in ascending order.
+  # @yield all ranges.
+  # @yieldparam [Range] range.
+  # @return [void]
   def each
     @range_map.each_node {|node| yield node.value}
   end
 
+  # Returns a new RangeSet instance containing all ranges of this RangeSet.
+  # @return [RangeSet] the clone.
   def clone
     RangeSet.new.copy(self)
   end
 
+  # Replaces the content of this RangeSet by the content of the given RangeSet.
+  # @param range_set [RangeSet] the other RangeSet to be copied
+  # @return [RangeSet] self.
   def copy(range_set)
     clear
     range_set.each {|range| put(range)}
@@ -267,6 +581,13 @@ class RangeSet
     self
   end
 
+  # Returns a String representation of this RangeSet.
+  #
+  #   RangeSet[].to_s             # -> "[]"
+  #   RangeSet[0...1].to_s        # -> "[0...1]"
+  #   RangeSet[0...1, 2...3].to_s # -> "[0...1, 2...3]"
+  #
+  # @return [String] the String representation.
   def to_s
     string_io = StringIO.new
 
