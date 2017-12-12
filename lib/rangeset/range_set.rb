@@ -237,11 +237,6 @@ class RangeSet
   #
   #   r = RangeSet[0...1]         # -> [0...1]
   #
-  #   # For a single element intersect? behaves exactly like include?
-  #   r.intersect?(0)             # -> true
-  #   r.intersect?(0.5)           # -> true
-  #   r.intersect?(1)             # -> false
-  #
   #   # Ranges only need a single common element with the range set
   #   r.intersect?(0...1)         # -> true
   #   r.intersect?(0...2)         # -> true
@@ -260,7 +255,7 @@ class RangeSet
       when RangeSet
         intersect_range_set?(other)
       else
-        include?(other)
+        RangeSet.unexpected_object(other)
     end
   end
 
