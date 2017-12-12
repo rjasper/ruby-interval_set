@@ -20,7 +20,7 @@ Or install it yourself as:
 
 ## Documentation
 
-http://www.rubydoc.info/github/rjasper/interval_set
+http://www.rubydoc.info/gems/interval_set
 
 ## Usage
 
