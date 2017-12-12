@@ -194,9 +194,6 @@ RangeSet[1...2].buffer(-0.5, -0.5) # -> []
 Convolve sets: A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
 
 ```ruby
-# Convolve with a singleton (effectively shifts the set)
-RangeSet[0...1] * 1        # -> [1...2]
-
 # Convolve with a range (effectively buffers the set)
 RangeSet[0...4] * (-1...2) # -> [-1...6] 
 

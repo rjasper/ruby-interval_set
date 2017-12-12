@@ -420,11 +420,8 @@ class RangeSet
   # The result will contain all elements which can be obtained by adding
   # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
   #
-  #   # Convolve with a singleton (effectively shifts the set)
-  #   RangeSet[0...1].convolve!(1)      # -> [1...2]
-  #
   #   # Convolve with a range (effectively buffers the set)
-  #   RangeSet[0...4].convolve!(-1...2) # -> [-1...6]
+  #   RangeSet[0...4].convolve!(-1...2)  # -> [-1...6]
   #
   #   # Convolving with empty or reversed ranges result in an empty set.
   #   RangeSet[0...4].convolve!(0...0)  # -> []
@@ -433,7 +430,7 @@ class RangeSet
   #   # Convolve with a range set
   #   RangeSet[0...1, 10...12].convolve!(RangeSet[-2...1, 1...2]) # -> [-2...3, 8...14]
   #
-  # @param other [Range | RangeSet | Object] the other object.
+  # @param other [Range | RangeSet] the other object.
   # @return [RangeSet] self
   def convolve!(other)
     case other
@@ -442,7 +439,7 @@ class RangeSet
       when RangeSet
         convolve_range_set!(other)
       else
-        convolve_element!(other)
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -451,8 +448,6 @@ class RangeSet
   #
   # The result will contain all elements which can be obtained by adding
   # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
-  #   # Convolve with a singleton (effectively shifts the set)
-  #   RangeSet[0...1] * 1         # -> [1...2]
   #
   #   # Convolve with a range (effectively buffers the set)
   #   RangeSet[0...4] * (-1...2)  # -> [-1...6]
@@ -464,7 +459,7 @@ class RangeSet
   #   # Convolve with a range set
   #   RangeSet[0...1, 10...12] * RangeSet[-2...1, 1...2]  # -> [-2...3, 8...14]
   #
-  # @param other [Range | RangeSet | Object] the other object.
+  # @param other [Range | RangeSet] the other object.
   # @return [RangeSet] a new RangeSet containing the convolution.
   def convolve(other)
     clone.convolve!(other)
@@ -483,7 +478,12 @@ class RangeSet
   # @param amount [Object]
   # @return [RangeSet] self.
   def shift!(amount)
-    convolve_element!(amount)
+    ranges = map {|range| range.first + amount...range.last + amount}
+    clear
+    ranges.each {|range| put(range)}
+    update_bounds
+
+    self
   end
 
   # Shifts this RangeSet by the given amount.
@@ -911,15 +911,6 @@ class RangeSet
 
     new_range_set.add_range_set(self)
     new_range_set.intersect_range_set(range_set.sub_set(bounds))
-  end
-
-  def convolve_element!(object)
-    ranges = map {|range| range.first + object...range.last + object}
-    clear
-    ranges.each {|range| put(range)}
-    update_bounds
-
-    self
   end
 
   def convolve_range!(range)

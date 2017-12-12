@@ -834,12 +834,6 @@ class RangeSetTest < Minitest::Test
     assert_empty range_set - range_set
   end
 
-  def test_that_it_convolves_numeric
-    range_set = RangeSet[0...1, 2...3]
-
-    assert_equal RangeSet[1...2, 3...4], range_set * 1
-  end
-
   def test_that_it_shifts_numeric
     range_set = RangeSet[0...1, 2...3]
 
