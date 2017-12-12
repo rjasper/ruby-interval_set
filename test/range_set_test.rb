@@ -153,69 +153,70 @@ class RangeSetTest < Minitest::Test
     assert !range_set.include?(3)
   end
 
-  def test_that_empty_includes_reversed_range
+  def test_that_empty_is_superset_of_empty_range
     # reversed ranges are interpreted as empty
-    assert RangeSet[].include?(1...0)
+    assert RangeSet[].superset?(0...0)
+    assert RangeSet[].superset?(1...0)
   end
 
-  def test_that_empty_does_not_include_range
-    assert !RangeSet[].include?(0...1)
+  def test_that_empty_is_not_superset_of_range
+    assert !RangeSet[].superset?(0...1)
   end
 
-  def test_that_it_includes_range
+  def test_that_it_is_superset_of_range
     range_set = RangeSet[0...1, 2...3]
 
-    assert range_set.include?(0...1)
-    assert range_set.include?(0.5...1)
-    assert range_set.include?(0...0.5)
-    assert range_set.include?(0.25...0.75)
-    assert range_set.include?(2...3)
-    assert range_set.include?(1...0)
+    assert range_set.superset?(0...1)
+    assert range_set.superset?(0.5...1)
+    assert range_set.superset?(0...0.5)
+    assert range_set.superset?(0.25...0.75)
+    assert range_set.superset?(2...3)
+    assert range_set.superset?(1...0)
   end
 
-  def test_that_it_not_includes_range
+  def test_that_it_is_not_superset_of_range
     range_set = RangeSet[0...1, 2...3]
 
-    assert !range_set.include?(-2...-1)
-    assert !range_set.include?(-1...0)
-    assert !range_set.include?(-1...0.5)
-    assert !range_set.include?(-1...1)
-    assert !range_set.include?(-1...1.5)
-    assert !range_set.include?(-1...2)
-    assert !range_set.include?(1...4)
-    assert !range_set.include?(1.5...4)
-    assert !range_set.include?(2...4)
-    assert !range_set.include?(2.5...4)
-    assert !range_set.include?(3...4)
-    assert !range_set.include?(5...6)
-    assert !range_set.include?(0...3)
+    assert !range_set.superset?(-2...-1)
+    assert !range_set.superset?(-1...0)
+    assert !range_set.superset?(-1...0.5)
+    assert !range_set.superset?(-1...1)
+    assert !range_set.superset?(-1...1.5)
+    assert !range_set.superset?(-1...2)
+    assert !range_set.superset?(1...4)
+    assert !range_set.superset?(1.5...4)
+    assert !range_set.superset?(2...4)
+    assert !range_set.superset?(2.5...4)
+    assert !range_set.superset?(3...4)
+    assert !range_set.superset?(5...6)
+    assert !range_set.superset?(0...3)
   end
 
-  def test_that_empty_includes_empty_range_set
-    assert RangeSet[].include?(RangeSet[])
+  def test_that_empty_is_superset_of_empty_range_set
+    assert RangeSet[].superset?(RangeSet[])
   end
 
-  def test_that_empty_does_not_include_range_set
-    assert !RangeSet[].include?(RangeSet[0...1])
+  def test_that_empty_is_not_superset_of_range_set
+    assert !RangeSet[].superset?(RangeSet[0...1])
   end
 
-  def test_that_range_set_includes_empty
-    assert RangeSet[0...1].include?(RangeSet[])
+  def test_that_range_set_is_superset_of_empty
+    assert RangeSet[0...1].superset?(RangeSet[])
   end
 
-  def test_that_range_set_is_included
+  def test_that_range_set_is_superset
     range_set = RangeSet[1...2, 3...4]
 
-    assert range_set.include?(RangeSet[1...2])
-    assert range_set.include?(RangeSet[3...4])
-    assert range_set.include?(RangeSet[1...2, 3...4])
+    assert range_set.superset?(RangeSet[1...2])
+    assert range_set.superset?(RangeSet[3...4])
+    assert range_set.superset?(RangeSet[1...2, 3...4])
   end
 
-  def test_that_range_set_is_not_included
+  def test_that_range_set_is_not_superset
     range_set = RangeSet[1...2, 3...4]
 
-    assert !range_set.include?(RangeSet[0...3])
-    assert !range_set.include?(RangeSet[1...2, 3...4, 5...6])
+    assert !range_set.superset?(RangeSet[0...3])
+    assert !range_set.superset?(RangeSet[1...2, 3...4, 5...6])
   end
 
   def test_that_it_is_subset
@@ -255,8 +256,6 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_is_superset
-    assert RangeSet[0...1].superset?(0)
-
     assert RangeSet[] >= RangeSet[]
     assert RangeSet[0...1] >= RangeSet[]
     assert RangeSet[0...1] >= RangeSet[0...1]

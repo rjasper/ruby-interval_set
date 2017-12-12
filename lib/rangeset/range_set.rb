@@ -107,8 +107,7 @@ class RangeSet
     end
   end
 
-  # Returns +true+ if this RangeSet contains all elements
-  # contained by the other object.
+  # Returns +true+ if this RangeSet contains the given element.
   #
   #   r = RangeSet[0...1]         # -> [0...1]
   #
@@ -116,31 +115,12 @@ class RangeSet
   #   r.include?(0.5)             # -> true
   #   r.include?(1)               # -> false ; a range's end is exclusive
   #
-  #   # You can also supply ranges
-  #   r.include?(0...1)           # -> true
-  #   r.include?(0...2)           # -> false ; the whole range must be included
-  #   r.include?(0...0.5)         # -> true
-  #
-  #   # ... and range sets as well
-  #   r.include?(RangeSet[0...1])               # -> true
-  #   r.include?(RangeSet[0...1, 2...3])        # -> false
-  #   r.include?(RangeSet[0...0.25, 0.75...1])  # -> true
-  #
-  # @param other [Range | RangeSet | Object] the other object.
-  def include?(other)
-    case other
-      when Range
-        include_range?(other)
-      when RangeSet
-        include_range_set?(other)
-      else
-        include_element?(other)
-    end
+  # @param element [Object]
+  def include?(element)
+    include_element?(element)
   end
 
   alias_method :===, :include?
-  alias_method :superset?, :include?
-  alias_method :>=, :include?
 
   # Returns +true+ if all elements of this RangeSet are
   # included by the other object.
@@ -157,7 +137,7 @@ class RangeSet
       when Range
         included_by_range?(other)
       when RangeSet
-        other.include_range_set?(self)
+        other.superset_range_set?(self)
       else
         false
     end
@@ -165,6 +145,34 @@ class RangeSet
 
   alias_method :subset?, :included_by?
   alias_method :<=, :included_by?
+
+  # Returns +true+ if this RangeSet contains all elements
+  # contained by the other object.
+  #
+  #   r = RangeSet[0...1]         # -> [0...1]
+  #
+  #   r.superset?(RangeSet[0...1])              # -> true
+  #   r.superset?(RangeSet[0...1, 2...3])       # -> false
+  #   r.superset?(RangeSet[0...0.25, 0.75...1]) # -> true
+  #
+  #   # You can also supply ranges
+  #   r.superset?(0...1)          # -> true
+  #   r.superset?(0...2)          # -> false ; the whole range must be included
+  #   r.superset?(0...0.5)        # -> true
+  #
+  # @param other [Range | RangeSet] the other object.
+  def superset?(other)
+    case other
+      when Range
+        superset_range?(other)
+      when RangeSet
+        superset_range_set?(other)
+      else
+        raise ArgumentError.new("unexpected object #{other}")
+    end
+  end
+
+  alias_method :>=, :superset?
 
   # Returns +true+ if this RangeSet is a proper superset of the other.
   #
@@ -636,7 +644,7 @@ class RangeSet
     !floor_entry.nil? && floor_entry.value.last > object
   end
 
-  def include_range?(range)
+  def superset_range?(range)
     return true if RangeSet::range_empty?(range)
     return false if empty? || !bounds_intersected_by?(range)
 
@@ -647,11 +655,11 @@ class RangeSet
     !left_entry.nil? && left_entry.value.last >= range.last
   end
 
-  def include_range_set?(range_set)
+  def superset_range_set?(range_set)
     return true if range_set == self || range_set.empty?
     return false if empty? || !range_set.bounds_intersected_by?(bounds)
 
-    range_set.all? {|range| include_range?(range)}
+    range_set.all? {|range| superset_range?(range)}
   end
 
   def included_by_range?(range)
