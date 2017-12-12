@@ -1,16 +1,15 @@
 
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'rangeset/version'
+require 'interval_set/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'rangeset'
-  spec.version       = RangeSet::VERSION
+  spec.version       = IntervalSet::VERSION
   spec.authors       = ['Rico Jasper']
   spec.email         = ['jasper.rico@gmail.com']
 
-  spec.summary       = 'set of ranges'
-  # spec.description   = %q{TODO: Write a longer description or delete this line.}
+  spec.summary       = 'Set of sorted non-overlapping ranges'
   spec.homepage      = 'https://github.com/rjasper/rangeset'
   spec.license       = 'MIT'
 

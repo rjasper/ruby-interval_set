@@ -1,1 +1,1 @@
-require_relative 'rangeset/range_set.rb'
+require_relative 'rangeset/interval_set.rb'

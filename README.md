@@ -1,6 +1,6 @@
-# RangeSet
+# IntervalSet
 
-RangeSet implements a set of sorted non-overlapping ranges. A range's start is always interpreted as inclusive while the end is exclusive.
+IntervalSet implements a set of sorted non-overlapping ranges. A range's start is always interpreted as inclusive while the end is exclusive.
 
 ## Installation
 
@@ -24,163 +24,163 @@ http://www.rubydoc.info/github/rjasper/rangeset
 
 ## Usage
 
-Create a range set:
+Create a interval set:
 
 ```ruby
-RangeSet.new              # -> []
-RangeSet[]                # -> []
-RangeSet[0...1]           # -> [0...1]
-RangeSet[0...1, 2...3]    # -> [0...1, 2...3]
-RangeSet[0...1, 1...2]    # -> [0...2]
+IntervalSet.new              # -> []
+IntervalSet[]                # -> []
+IntervalSet[0...1]           # -> [0...1]
+IntervalSet[0...1, 2...3]    # -> [0...1, 2...3]
+IntervalSet[0...1, 1...2]    # -> [0...2]
 
 array = [0...1, 2...3]
-RangeSet[*array]          # -> [0...1, 2...3]
+IntervalSet[*array]          # -> [0...1, 2...3]
 ```
 
 Add a range:
 
 ```ruby
-RangeSet.new << (0...1)   # -> [0...1]
-RangeSet.new.add(0...1)   # -> [0...1]
+IntervalSet.new << (0...1)   # -> [0...1]
+IntervalSet.new.add(0...1)   # -> [0...1]
 
-r = RangeSet.new          # -> []
-r << (0...1)              # -> [0...1]
-r << (2...3)              # -> [0...1, 2...3]
-r << (1...2)              # -> [0...3]
-r << (-1...4)             # -> [-1...4]
+i = IntervalSet.new          # -> []
+i << (0...1)              # -> [0...1]
+i << (2...3)              # -> [0...1, 2...3]
+i << (1...2)              # -> [0...3]
+i << (-1...4)             # -> [-1...4]
 ```
 
 Remove a range:
 
 ```ruby
-r = RangeSet[0...10]      # -> [0...10]
-r >> (2...8)              # -> [0...2, 8...10]
-r.remove(0...2)           # -> [8...10]
+i = IntervalSet[0...10]      # -> [0...10]
+i >> (2...8)              # -> [0...2, 8...10]
+i.remove(0...2)           # -> [8...10]
 ```
 
 Get bounds:
 
 ```ruby
-r = RangeSet[0...1, 2...3]  # -> [0...1, 2...3]
-r.min                     # -> 0
-r.max                     # -> 3
-r.bounds                  # -> 0...3
+i = IntervalSet[0...1, 2...3]  # -> [0...1, 2...3]
+i.min                     # -> 0
+i.max                     # -> 3
+i.bounds                  # -> 0...3
 ```
 
 Check empty:
 
 ```ruby
-RangeSet[].empty?         # -> true
+IntervalSet[].empty?         # -> true
 
-r = RangeSet[0...1]       # -> [0...1]
-r.empty?                  # -> false
-r >> (0...1)              # -> []
-r.empty?                  # -> true
+i = IntervalSet[0...1]       # -> [0...1]
+i.empty?                  # -> false
+i >> (0...1)              # -> []
+i.empty?                  # -> true
 ```
 
 Count ranges:
 
 ```ruby
-r = RangeSet[]            # -> []
-r.count                   # -> 0
-r << (0...1)              # -> [0...1]
-r.count                   # -> 1
-r << (2...3)              # -> [0...1, 2...3]
-r.count                   # -> 2
-r << (1...2)              # -> [0...3]
-r.count                   # -> 1
+i = IntervalSet[]            # -> []
+i.count                   # -> 0
+i << (0...1)              # -> [0...1]
+i.count                   # -> 1
+i << (2...3)              # -> [0...1, 2...3]
+i.count                   # -> 2
+i << (1...2)              # -> [0...3]
+i.count                   # -> 1
 ```
 
 Check inclusion:
 
 ```ruby
-r = RangeSet[0...1]       # -> [0...1]
+i = IntervalSet[0...1]       # -> [0...1]
 
-r.include?(0)             # -> true
-r.include?(0.5)           # -> true
-r.include?(1)             # -> false ; a range's end is exclusive
+i.include?(0)             # -> true
+i.include?(0.5)           # -> true
+i.include?(1)             # -> false ; a range's end is exclusive
 ```
 
 Check intersection:
 
 ```ruby
-r = RangeSet[0...1]       # -> [0...1]
+i = IntervalSet[0...1]       # -> [0...1]
 
-# Ranges only need a single common element with the range set
-r.intersect?(0...1)       # -> true
-r.intersect?(0...2)       # -> true
-r.intersect?(1...2)       # -> false ; the start of a range is inclusive but the end exclusive
+# Ranges only need a single common element with the interval set
+i.intersect?(0...1)       # -> true
+i.intersect?(0...2)       # -> true
+i.intersect?(1...2)       # -> false ; the start of a range is inclusive but the end exclusive
 
-# The same applies for range sets
-r.intersect?(RangeSet[0...1])        # -> true
-r.intersect?(RangeSet[0...1, 2...3]) # -> true
-r.intersect?(RangeSet[2...3])        # -> false
+# The same applies for interval sets
+i.intersect?(IntervalSet[0...1])        # -> true
+i.intersect?(IntervalSet[0...1, 2...3]) # -> true
+i.intersect?(IntervalSet[2...3])        # -> false
 ```
 
 Calculate union:
 
 ```ruby
-RangeSet[0...1, 2...3] | RangeSet[1...2, 4...5] # -> [0...3, 4...5]
+IntervalSet[0...1, 2...3] | IntervalSet[1...2, 4...5] # -> [0...3, 4...5]
 ```
 
 Calculate intersection:
 
 ```ruby
-RangeSet[0...2, 3...5] & RangeSet[1...4, 5...6] # -> [1...2, 3...4]
+IntervalSet[0...2, 3...5] & IntervalSet[1...4, 5...6] # -> [1...2, 3...4]
 ```
 
 Calculate difference:
 
 ```ruby
-RangeSet[0...2, 3...5] - RangeSet[1...4, 5...6] # -> [0...1, 4...5]
+IntervalSet[0...2, 3...5] - IntervalSet[1...4, 5...6] # -> [0...1, 4...5]
 ```
 
 Calculate exclusive set:
 
 ```ruby
-RangeSet[0...1] ^ RangeSet[1...2] # -> [0...2]
-RangeSet[0...2, 4...6] ^ RangeSet[1...5, 7...8] # -> [0...1, 2...4, 5...6, 7...8]
-RangeSet[0...1] ^ RangeSet[0...1] # -> []
+IntervalSet[0...1] ^ IntervalSet[1...2] # -> [0...2]
+IntervalSet[0...2, 4...6] ^ IntervalSet[1...5, 7...8] # -> [0...1, 2...4, 5...6, 7...8]
+IntervalSet[0...1] ^ IntervalSet[0...1] # -> []
 ```
 
 Compare sets:
 
 ```ruby
 # A > B is true iff A is a proper superset of B
-RangeSet[0...1] > RangeSet[0...1]          # -> false 
-RangeSet[0...2] > RangeSet[0...1]          # -> true 
-RangeSet[0...1] > RangeSet[1...3]          # -> false
+IntervalSet[0...1] > IntervalSet[0...1]          # -> false 
+IntervalSet[0...2] > IntervalSet[0...1]          # -> true 
+IntervalSet[0...1] > IntervalSet[1...3]          # -> false
 
 # A >= B is true iff A is equal to B or a proper superset
-RangeSet[0...1] >= RangeSet[0...1]         # -> true 
-RangeSet[0...2] >= RangeSet[0...1]         # -> true 
-RangeSet[0...1] >= RangeSet[0...1, 2...3]  # -> false
-RangeSet[0...3] >= RangeSet[0...1, 2...3]  # -> true
+IntervalSet[0...1] >= IntervalSet[0...1]         # -> true 
+IntervalSet[0...2] >= IntervalSet[0...1]         # -> true 
+IntervalSet[0...1] >= IntervalSet[0...1, 2...3]  # -> false
+IntervalSet[0...3] >= IntervalSet[0...1, 2...3]  # -> true
 
 # A < B is true iff A is a proper subset of B 
 # Iff A < B then A > B
-RangeSet[0...1] < RangeSet[0...2]          # -> true 
-RangeSet[1...3] < RangeSet[0...2]          # -> false 
-RangeSet[1...3] < RangeSet[0...2]          # -> false
+IntervalSet[0...1] < IntervalSet[0...2]          # -> true 
+IntervalSet[1...3] < IntervalSet[0...2]          # -> false 
+IntervalSet[1...3] < IntervalSet[0...2]          # -> false
 
 # A <= B is true iff A is equal to B or a proper subset
 # Iff A <= B then A >= B
-RangeSet[0...1] <= RangeSet[0...1]         # -> true
-RangeSet[0...1] <= RangeSet[0...2]         # -> true 
-RangeSet[0...1, 2...3] <= RangeSet[0...1]  # -> false 
-RangeSet[0...1, 2...3] <= RangeSet[0...3]  # -> true 
+IntervalSet[0...1] <= IntervalSet[0...1]         # -> true
+IntervalSet[0...1] <= IntervalSet[0...2]         # -> true 
+IntervalSet[0...1, 2...3] <= IntervalSet[0...1]  # -> false 
+IntervalSet[0...1, 2...3] <= IntervalSet[0...3]  # -> true 
 
 # A == B
-RangeSet[0...1] == RangeSet[0...1]  # -> true
-RangeSet[0...1] == RangeSet[1...2]  # -> false
+IntervalSet[0...1] == IntervalSet[0...1]  # -> true
+IntervalSet[0...1] == IntervalSet[1...2]  # -> false
 ```
 
 Use in case statements:
 
 ```ruby
 case 2.5
-  when RangeSet[0...2] then 'between 0 and 2'
-  when RangeSet[2...3] then 'between 2 and 3'
+  when IntervalSet[0...2] then 'between 0 and 2'
+  when IntervalSet[2...3] then 'between 2 and 3'
 end
 # -> "between 2 and 3"
 ```
@@ -188,40 +188,40 @@ end
 Shift by a given amount:
 
 ```ruby
-RangeSet[0...1].shift(1)    # -> [1...2] 
+IntervalSet[0...1].shift(1)    # -> [1...2] 
 ```
 
-Note that `shift(0)` will not be optimized since RangeSet does not assume numbers as element type.
+Note that `shift(0)` will not be optimized since IntervalSet does not assume numbers as element type.
 
 Buffer left and right:
 
 ```ruby
-RangeSet[1...2].buffer(1, 2) # -> [0...4]
+IntervalSet[1...2].buffer(1, 2) # -> [0...4]
 
 # Negative values will shrink the ranges:
-RangeSet[0...4].buffer(-1, -2) # -> [1...2]
-RangeSet[1...2].buffer(-0.5, -0.5) # -> []
+IntervalSet[0...4].buffer(-1, -2) # -> [1...2]
+IntervalSet[1...2].buffer(-0.5, -0.5) # -> []
 ```
 
 Convolve sets: A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
 
 ```ruby
 # Convolve with a range (effectively buffers the set)
-RangeSet[0...4] * (-1...2) # -> [-1...6] 
+IntervalSet[0...4] * (-1...2) # -> [-1...6] 
 
 # Convolving with empty or reversed ranges result in an empty set.
-RangeSet[0...4] * (0...0)   # -> []
-RangeSet[0...4] * (1...0)   # -> []
+IntervalSet[0...4] * (0...0)   # -> []
+IntervalSet[0...4] * (1...0)   # -> []
 
-# Convolve with a range set
-RangeSet[0...1, 10...12] * RangeSet[-2...1, 1...2]  # -> [-2...3, 8...14] 
+# Convolve with a interval set
+IntervalSet[0...1, 10...12] * IntervalSet[-2...1, 1...2]  # -> [-2...3, 8...14] 
 ```
 
-Copy another range set:
+Copy another interval set:
 
 ```ruby
-a = RangeSet[0...1]       # -> [0...1] 
-b = RangeSet[2...3]       # -> [2...3] 
+a = IntervalSet[0...1]       # -> [0...1] 
+b = IntervalSet[2...3]       # -> [2...3] 
 
 a.copy(b)
 
@@ -229,10 +229,10 @@ a                         # -> [2...3]
 b                         # -> [2...3] 
 ```
 
-Clone another range set:
+Clone another interval set:
 
 ```ruby
-a = RangeSet[0...1]       # -> [0...1] 
+a = IntervalSet[0...1]       # -> [0...1] 
 b = a.clone               # -> [0...1] 
 b << (2...3)
 b                         # -> [0...1, 2...3] 
@@ -245,10 +245,10 @@ a = Date.parse('2000-01-01')
 b = Date.parse('2000-01-02')
 c = Date.parse('2000-01-03') 
  
-r = RangeSet[a...b]       # -> [2000-01-01...2000-01-02]
+i = IntervalSet[a...b]       # -> [2000-01-01...2000-01-02]
 
-r << (b...c)              # -> [2000-01-01...2000-01-03] 
-r.shift!(1)               # -> [2000-01-02...2000-01-04]
+i << (b...c)              # -> [2000-01-01...2000-01-03] 
+i.shift!(1)               # -> [2000-01-02...2000-01-04]
 ```
 
 

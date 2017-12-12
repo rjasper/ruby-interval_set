@@ -1,29 +1,29 @@
 require_relative 'version'
 require 'treemap-fork'
 
-# RangeSet implements a set of sorted non-overlapping ranges.
+# IntervalSet implements a set of sorted non-overlapping ranges.
 # A range's start is always interpreted as inclusive while the end is exclusive
-class RangeSet
+class IntervalSet
   include Enumerable
 
-  # Builds a new RangeSet from the supplied ranges. Overlapping ranges will be merged.
-  #   RangeSet[]                # -> []
-  #   RangeSet[0...1]           # -> [0...1]
-  #   RangeSet[0...1, 2...3]    # -> [0...1, 2...3]
-  #   RangeSet[0...1, 1...2]    # -> [0...2]
+  # Builds a new IntervalSet from the supplied ranges. Overlapping ranges will be merged.
+  #   IntervalSet[]                # -> []
+  #   IntervalSet[0...1]           # -> [0...1]
+  #   IntervalSet[0...1, 2...3]    # -> [0...1, 2...3]
+  #   IntervalSet[0...1, 1...2]    # -> [0...2]
   #
   #   array = [0...1, 2...3]
-  #   RangeSet[*array]          # -> [0...1, 2...3]
+  #   IntervalSet[*array]          # -> [0...1, 2...3]
   #
-  # @param ranges [Range[]] a list of ranges to be added to the new Rangeset
-  # @return [RangeSet] a new RangeSet containing the supplied ranges.
+  # @param ranges [Range[]] a list of ranges to be added to the new IntervalSet
+  # @return [IntervalSet] a new IntervalSet containing the supplied ranges.
   def self.[](*ranges)
-    RangeSet.new.tap do |range_set|
-      ranges.each {|range| range_set << range}
+    IntervalSet.new.tap do |interval_set|
+      ranges.each {|range| interval_set << range}
     end
   end
 
-  # Returns an empty instance of RangeSet.
+  # Returns an empty instance of IntervalSet.
   # @param range_map [TreeMap] a TreeMap of ranges. For internal use only.
   def initialize(range_map = TreeMap.new)
     unless range_map.instance_of?(TreeMap) || range_map.instance_of?(TreeMap::BoundedMap)
@@ -35,47 +35,47 @@ class RangeSet
     update_bounds
   end
 
-  # Returns +true+ if this RangeSet contains no ranges.
+  # Returns +true+ if this IntervalSet contains no ranges.
   def empty?
     @range_map.empty?
   end
 
-  # Returns the lower bound of this RangeSet.
+  # Returns the lower bound of this IntervalSet.
   #
-  #   RangeSet[0...1, 2...3].min  # -> 0
-  #   RangeSet[].min              # -> nil
+  #   IntervalSet[0...1, 2...3].min  # -> 0
+  #   IntervalSet[].min              # -> nil
   #
   # @return the lower bound or +nil+ if empty.
   def min
     @min
   end
 
-  # Returns the upper bound of this RangeSet.
+  # Returns the upper bound of this IntervalSet.
   #
-  #   RangeSet[0...1, 2...3].max  # -> 3
-  #   RangeSet[].max              # -> nil
+  #   IntervalSet[0...1, 2...3].max  # -> 3
+  #   IntervalSet[].max              # -> nil
   #
   # @return the upper bound or +nil+ if empty.
   def max
     @max
   end
 
-  # Returns the bounds of this RangeSet.
+  # Returns the bounds of this IntervalSet.
   #
-  #   RangeSet[0...1, 2...3].bounds # -> 0...3
-  #   RangeSet[].bounds             # -> nil
+  #   IntervalSet[0...1, 2...3].bounds # -> 0...3
+  #   IntervalSet[].bounds             # -> nil
   #
   # @return [Range] a range from lower to upper bound or +nil+ if empty.
   def bounds
     empty? ? nil : min...max
   end
 
-  # Returns +true+ if two RangeSets are equal.
+  # Returns +true+ if two IntervalSets are equal.
   #
-  #   RangeSet[0...1] == RangeSet[0...1]  # -> true
-  #   RangeSet[0...1] == RangeSet[1...2]  # -> false
+  #   IntervalSet[0...1] == IntervalSet[0...1]  # -> true
+  #   IntervalSet[0...1] == IntervalSet[1...2]  # -> false
   #
-  # @param other [RangeSet] the other RangeSet.
+  # @param other [IntervalSet] the other IntervalSet.
   def eql?(other)
     return false if count != other.count
     return false if bounds != other.bounds
@@ -89,30 +89,30 @@ class RangeSet
   alias_method :==, :eql?
 
   # Returns +true+ if the other object represents a equal
-  # set of ranges as this RangeSet.
+  # set of ranges as this IntervalSet.
   #
-  #   RangeSet[1...2].eql_set?(1...2)           # -> true
-  #   RangeSet[1...2].eql_set?(RangeSet[1...2]) # -> true
+  #   IntervalSet[1...2].eql_set?(1...2)           # -> true
+  #   IntervalSet[1...2].eql_set?(IntervalSet[1...2]) # -> true
   #
-  # @param other [Range | RangeSet] the other object.
+  # @param other [Range | IntervalSet] the other object.
   def eql_set?(other)
     case other
       when Range
         eql_range?(other)
-      when RangeSet
+      when IntervalSet
         eql?(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
-  # Returns +true+ if this RangeSet contains the given element.
+  # Returns +true+ if this IntervalSet contains the given element.
   #
-  #   r = RangeSet[0...1]         # -> [0...1]
+  #   i = IntervalSet[0...1]         # -> [0...1]
   #
-  #   r.include?(0)               # -> true
-  #   r.include?(0.5)             # -> true
-  #   r.include?(1)               # -> false ; a range's end is exclusive
+  #   i.include?(0)               # -> true
+  #   i.include?(0.5)             # -> true
+  #   i.include?(1)               # -> false ; a range's end is exclusive
   #
   # @param element [Object]
   def include?(element)
@@ -123,82 +123,82 @@ class RangeSet
 
   alias_method :===, :include?
 
-  # Returns +true+ if this RangeSet includes all elements
+  # Returns +true+ if this IntervalSet includes all elements
   # of the other object.
   #
-  #   RangeSet[0...1] >= RangeSet[0...1]        # -> true
-  #   RangeSet[0...2] >= RangeSet[0...1]        # -> true
-  #   RangeSet[0...1] >= RangeSet[0...1, 2...3] # -> false
-  #   RangeSet[0...3] >= RangeSet[0...1, 2...3] # -> true
+  #   IntervalSet[0...1] >= IntervalSet[0...1]        # -> true
+  #   IntervalSet[0...2] >= IntervalSet[0...1]        # -> true
+  #   IntervalSet[0...1] >= IntervalSet[0...1, 2...3] # -> false
+  #   IntervalSet[0...3] >= IntervalSet[0...1, 2...3] # -> true
   #
   #   # You can also supply ranges
-  #   RangeSet[0...2].superset?(0...1)  # -> true
+  #   IntervalSet[0...2].superset?(0...1)  # -> true
   #
-  # @param other [Range | RangeSet] the other object.
+  # @param other [Range | IntervalSet] the other object.
   def superset?(other)
     case other
       when Range
         superset_range?(other)
-      when RangeSet
-        superset_range_set?(other)
+      when IntervalSet
+        superset_interval_set?(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :>=, :superset?
 
-  # Returns +true+ if all elements of this RangeSet are
+  # Returns +true+ if all elements of this IntervalSet are
   # included by the other object.
   #
-  #   RangeSet[0...1] <= RangeSet[0...1]        # -> true
-  #   RangeSet[0...1] <= RangeSet[0...1, 2...3] # -> true
-  #   RangeSet[0...1, 2...3] <= RangeSet[0...1] # -> false
-  #   RangeSet[0...1, 2...3] <= RangeSet[0...3] # -> true
+  #   IntervalSet[0...1] <= IntervalSet[0...1]        # -> true
+  #   IntervalSet[0...1] <= IntervalSet[0...1, 2...3] # -> true
+  #   IntervalSet[0...1, 2...3] <= IntervalSet[0...1] # -> false
+  #   IntervalSet[0...1, 2...3] <= IntervalSet[0...3] # -> true
   #
   #   # You can also supply ranges
-  #   RangeSet[0...1, 2...3].subset?(0...3)    # -> true
+  #   IntervalSet[0...1, 2...3].subset?(0...3)    # -> true
   #
-  # @param other [Range | RangeSet] the other object.
+  # @param other [Range | IntervalSet] the other object.
   def subset?(other)
     case other
       when Range
         subset_range?(other)
-      when RangeSet
-        other.superset_range_set?(self)
+      when IntervalSet
+        other.superset_interval_set?(self)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :<=, :subset?
 
-  # Returns +true+ if this RangeSet is a proper superset of the other.
+  # Returns +true+ if this IntervalSet is a proper superset of the other.
   #
-  #   RangeSet[0...2] > RangeSet[0...1] # -> true
-  #   RangeSet[0...2] > RangeSet[0...2] # -> false
-  #   RangeSet[0...2] > RangeSet[1...3] # -> false
+  #   IntervalSet[0...2] > IntervalSet[0...1] # -> true
+  #   IntervalSet[0...2] > IntervalSet[0...2] # -> false
+  #   IntervalSet[0...2] > IntervalSet[1...3] # -> false
   #
   #   # Compare to ranges
-  #   RangeSet[0...3].superset?(1...2)  # -> true
+  #   IntervalSet[0...3].superset?(1...2)  # -> true
   #
-  # @param other [Range | RangeSet] the other object.
+  # @param other [Range | IntervalSet] the other object.
   def proper_superset?(other)
     !eql_set?(other) && superset?(other)
   end
 
   alias_method :>, :proper_superset?
 
-  # Return +true+ if this RangeSet is a proper subset of the other.
+  # Return +true+ if this IntervalSet is a proper subset of the other.
   #
-  #   RangeSet[0...1] < RangeSet[0...2] # -> true
-  #   RangeSet[1...3] < RangeSet[0...2] # -> false
-  #   RangeSet[1...3] < RangeSet[0...2] # -> false
+  #   IntervalSet[0...1] < IntervalSet[0...2] # -> true
+  #   IntervalSet[1...3] < IntervalSet[0...2] # -> false
+  #   IntervalSet[1...3] < IntervalSet[0...2] # -> false
   #
   #   # Compare to ranges
-  #   RangeSet[1...2].subset?(0...3)    # -> false
+  #   IntervalSet[1...2].subset?(0...3)    # -> false
   #
-  # @param other [Range | RangeSet] the other object.
+  # @param other [Range | IntervalSet] the other object.
   def proper_subset?(other)
     !eql_set?(other) && subset?(other)
   end
@@ -206,225 +206,225 @@ class RangeSet
   alias_method :<, :proper_subset?
 
   # Returns +true+ if the given range has common elements with the
-  # bounding range of this RangeSet.
+  # bounding range of this IntervalSet.
   #
-  #   RangeSet[1...2].bounds_intersected_by?(2...3)         # -> false
-  #   RangeSet[1...2, 5...6].bounds_intersected_by?(3...4)  # -> true
+  #   IntervalSet[1...2].bounds_intersected_by?(2...3)         # -> false
+  #   IntervalSet[1...2, 5...6].bounds_intersected_by?(3...4)  # -> true
   #
   # @param range [Range]
   def bounds_intersected_by?(range)
-    return false if RangeSet.range_empty?(range)
+    return false if IntervalSet.range_empty?(range)
 
     !empty? && range.first < max && range.last > min
   end
 
   # Returns +true+ if the given range has common elements with the
-  # bounding range or the bounds of this RangeSet.
+  # bounding range or the bounds of this IntervalSet.
   #
-  #   RangeSet[1...2].bounds_intersected_or_touched_by?(2...3)        # -> true
-  #   RangeSet[1...2].bounds_intersected_or_touched_by?(3...4)        # -> false
-  #   RangeSet[1...2, 5...6].bounds_intersected_or_touched_by?(3...4) # -> true
+  #   IntervalSet[1...2].bounds_intersected_or_touched_by?(2...3)        # -> true
+  #   IntervalSet[1...2].bounds_intersected_or_touched_by?(3...4)        # -> false
+  #   IntervalSet[1...2, 5...6].bounds_intersected_or_touched_by?(3...4) # -> true
   #
   # @param range [Range]
   def bounds_intersected_or_touched_by?(range)
-    return false if RangeSet.range_empty?(range)
+    return false if IntervalSet.range_empty?(range)
 
     !empty? && range.first <= max && range.last >= min
   end
 
   # Returns +true+ if the given object has any common elements with
-  # this RangeSet.
+  # this IntervalSet.
   #
-  #   r = RangeSet[0...1]         # -> [0...1]
+  #   i = IntervalSet[0...1]         # -> [0...1]
   #
-  #   # Ranges only need a single common element with the range set
-  #   r.intersect?(0...1)         # -> true
-  #   r.intersect?(0...2)         # -> true
-  #   r.intersect?(1...2)         # -> false ; the start of a range is inclusive but the end exclusive
+  #   # Ranges only need a single common element with the interval set
+  #   i.intersect?(0...1)         # -> true
+  #   i.intersect?(0...2)         # -> true
+  #   i.intersect?(1...2)         # -> false ; the start of a range is inclusive but the end exclusive
   #
-  #   # The same applies for range sets
-  #   r.intersect?(RangeSet[0...1])         # -> true
-  #   r.intersect?(RangeSet[0...1, 2...3])  # -> true
-  #   r.intersect?(RangeSet[2...3])         # -> false
+  #   # The same applies for interval sets
+  #   i.intersect?(IntervalSet[0...1])         # -> true
+  #   i.intersect?(IntervalSet[0...1, 2...3])  # -> true
+  #   i.intersect?(IntervalSet[2...3])         # -> false
   #
-  # @param other [Range | RangeSet | #<=>] the other object.
+  # @param other [Range | IntervalSet | #<=>] the other object.
   def intersect?(other)
     case other
       when Range
         intersect_range?(other)
-      when RangeSet
-        intersect_range_set?(other)
+      when IntervalSet
+        intersect_interval_set?(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
-  # Counts the number of ranges contained by this RangeSet.
+  # Counts the number of ranges contained by this IntervalSet.
   #
-  #   r = RangeSet[]              # -> []
-  #   r.count                     # -> 0
-  #   r << (0...1)                # -> [0...1]
-  #   r.count                     # -> 1
-  #   r << (2...3)                # -> [0...1, 2...3]
-  #   r.count                     # -> 2
-  #   r << (1...2)                # -> [0...3]
-  #   r.count                     # -> 1
+  #   i = IntervalSet[]              # -> []
+  #   i.count                     # -> 0
+  #   i << (0...1)                # -> [0...1]
+  #   i.count                     # -> 1
+  #   i << (2...3)                # -> [0...1, 2...3]
+  #   i.count                     # -> 2
+  #   i << (1...2)                # -> [0...3]
+  #   i.count                     # -> 1
   #
   # @return [Integer] the number of ranges.
   def count
     @range_map.count
   end
 
-  # Adds the other object's elements to this RangeSet.
-  # The result is stored in this RangeSet.
+  # Adds the other object's elements to this IntervalSet.
+  # The result is stored in this IntervalSet.
   #
-  #   RangeSet.new.add(0...1)     # -> [0...1]
-  #   RangeSet.new << (0...1)     # -> [0...1]
+  #   IntervalSet.new.add(0...1)     # -> [0...1]
+  #   IntervalSet.new << (0...1)     # -> [0...1]
   #
-  #   r = RangeSet.new            # -> []
-  #   r << (0...1)                # -> [0...1]
-  #   r << (2...3)                # -> [0...1, 2...3]
-  #   r << (1...2)                # -> [0...3]
-  #   r << (-1...4)               # -> [-1...4]
+  #   i = IntervalSet.new            # -> []
+  #   i << (0...1)                # -> [0...1]
+  #   i << (2...3)                # -> [0...1, 2...3]
+  #   i << (1...2)                # -> [0...3]
+  #   i << (-1...4)               # -> [-1...4]
   #
-  # @param other [Range, RangeSet] the other object.
-  # @return [RangeSet] self.
+  # @param other [Range, IntervalSet] the other object.
+  # @return [IntervalSet] self.
   def add(other)
     case other
       when Range
         add_range(other)
-      when RangeSet
-        add_range_set(other)
+      when IntervalSet
+        add_interval_set(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :<<, :add
   alias_method :union!, :add
 
-  # Removes the other object's elements from this RangeSet.
-  # The result is stored in this RangeSet.
+  # Removes the other object's elements from this IntervalSet.
+  # The result is stored in this IntervalSet.
   #
-  #   r = RangeSet[0...10]        # -> [0...10]
-  #   r.remove(0...2)             # -> [8...10]
-  #   r >> (2...8)                # -> [0...2, 8...10]
+  #   i = IntervalSet[0...10]        # -> [0...10]
+  #   i.remove(0...2)             # -> [8...10]
+  #   i >> (2...8)                # -> [0...2, 8...10]
   #
-  # @param other [Range, RangeSet] the other object.
-  # @return [RangeSet] self.
+  # @param other [Range, IntervalSet] the other object.
+  # @return [IntervalSet] self.
   def remove(other)
     case other
       when Range
         remove_range(other)
-      when RangeSet
-        remove_range_set(other)
+      when IntervalSet
+        remove_interval_set(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :>>, :remove
   alias_method :difference!, :remove
 
-  # Intersects the other object's elements with this RangeSet.
-  # The result is stored in this RangeSet.
+  # Intersects the other object's elements with this IntervalSet.
+  # The result is stored in this IntervalSet.
   #
-  #   r = RangeSet[0...2, 3...5].intersect(1...5) # -> [1...2, 3...5]
-  #   r                                           # -> [1...2, 3...5]
+  #   i = IntervalSet[0...2, 3...5].intersect(1...5) # -> [1...2, 3...5]
+  #   i                                           # -> [1...2, 3...5]
   #
-  # @param other [Range, RangeSet] the other object.
-  # @return [RangeSet] self.
+  # @param other [Range, IntervalSet] the other object.
+  # @return [IntervalSet] self.
   def intersect(other)
     case other
       when Range
         intersect_range(other)
-      when RangeSet
-        intersect_range_set(other)
+      when IntervalSet
+        intersect_interval_set(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :intersection!, :intersect
 
-  # Intersects the other object's elements with this RangeSet.
-  # The result is stored in a new RangeSet.
+  # Intersects the other object's elements with this IntervalSet.
+  # The result is stored in a new IntervalSet.
   #
-  #   RangeSet[0...2, 3...5] & RangeSet[1...4, 5...6] # -> [1...2, 3...4]
+  #   IntervalSet[0...2, 3...5] & IntervalSet[1...4, 5...6] # -> [1...2, 3...4]
   #
-  # @param other [Range, RangeSet] the other object.
-  # @return [RangeSet] a new RangeSet containing the intersection.
+  # @param other [Range, IntervalSet] the other object.
+  # @return [IntervalSet] a new IntervalSet containing the intersection.
   def intersection(other)
     case other
       when Range
         intersection_range(other)
-      when RangeSet
-        intersection_range_set(other)
+      when IntervalSet
+        intersection_interval_set(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :&, :intersection
 
-  # Joins the other object's elements with this RangeSet.
-  # The result is stored in a new RangeSet.
+  # Joins the other object's elements with this IntervalSet.
+  # The result is stored in a new IntervalSet.
   #
-  #   RangeSet[0...1, 2...3] | RangeSet[1...2, 4...5] # -> [0...3, 4...5]
+  #   IntervalSet[0...1, 2...3] | IntervalSet[1...2, 4...5] # -> [0...3, 4...5]
   #
   # Note that using +add+ or +union!+ is more efficient than
   # <code>+=</code> or <code>|=</code>.
   #
-  # @param other [Range, RangeSet] the other object.
-  # @return [RangeSet] a new RangeSet containing the union.
+  # @param other [Range, IntervalSet] the other object.
+  # @return [IntervalSet] a new IntervalSet containing the union.
   def union(other)
     case other
       when Range
         union_range(other)
-      when RangeSet
-        union_range_set(other)
+      when IntervalSet
+        union_interval_set(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :|, :union
   alias_method :+, :union
 
-  # Subtracts the other object's elements from this RangeSet.
-  # The result is stored in a new RangeSet.
+  # Subtracts the other object's elements from this IntervalSet.
+  # The result is stored in a new IntervalSet.
   #
-  #   RangeSet[0...2, 3...5] - RangeSet[1...4, 5...6] # -> [0...1, 4...5]
+  #   IntervalSet[0...2, 3...5] - IntervalSet[1...4, 5...6] # -> [0...1, 4...5]
   #
   # Note that using +remove+ or +difference!+ is more efficient
   # than <code>-=</code>.
   #
-  # @param other [Range, RangeSet] the other object.
-  # @return [RangeSet] a new RangeSet containing the difference.
+  # @param other [Range, IntervalSet] the other object.
+  # @return [IntervalSet] a new IntervalSet containing the difference.
   def difference(other)
     case other
       when Range
         difference_range(other)
-      when RangeSet
-        difference_range_set(other)
+      when IntervalSet
+        difference_interval_set(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
   alias_method :-, :difference
 
-  # Calculates a new RangeSet which only contains elements exclusively from
+  # Calculates a new IntervalSet which only contains elements exclusively from
   # either this or the given object.
   #
   # This operation is equivalent to <code>(self | other) - (self & other)</code>
   #
-  #   RangeSet[0...1] ^ RangeSet[1...2]               # -> [0...2]
-  #   RangeSet[0...2, 4...6] ^ RangeSet[1...5, 7...8] # -> [0...1, 2...4, 5...6, 7...8]
-  #   RangeSet[0...1] ^ RangeSet[0...1]               # -> []
+  #   IntervalSet[0...1] ^ IntervalSet[1...2]               # -> [0...2]
+  #   IntervalSet[0...2, 4...6] ^ IntervalSet[1...5, 7...8] # -> [0...1, 2...4, 5...6, 7...8]
+  #   IntervalSet[0...1] ^ IntervalSet[0...1]               # -> []
   #
-  # @param other [Range, RangeSet]
-  # @return [RangeSet] a new RangeSet containing the exclusive set.
+  # @param other [Range, IntervalSet]
+  # @return [IntervalSet] a new IntervalSet containing the exclusive set.
   def xor(other)
     clone.xor!(other)
   end
@@ -437,81 +437,81 @@ class RangeSet
   #
   # The resulting set is equivalent to <code>(self | other) - (self & other)</code>
   #
-  #   RangeSet[0...1].xor!(RangeSet[1...2])               # -> [0...2]
-  #   RangeSet[0...2, 4...6].xor!(RangeSet[1...5, 7...8]) # -> [0...1, 2...4, 5...6, 7...8]
-  #   RangeSet[0...1].xor!(RangeSet[0...1])               # -> []
+  #   IntervalSet[0...1].xor!(IntervalSet[1...2])               # -> [0...2]
+  #   IntervalSet[0...2, 4...6].xor!(IntervalSet[1...5, 7...8]) # -> [0...1, 2...4, 5...6, 7...8]
+  #   IntervalSet[0...1].xor!(IntervalSet[0...1])               # -> []
   #
-  # @param other [Range, RangeSet]
-  # @return [RangeSet] a new RangeSet containing the exclusive set.
+  # @param other [Range, IntervalSet]
+  # @return [IntervalSet] a new IntervalSet containing the exclusive set.
   def xor!(other)
     intersection = self & other
 
     add(other).remove(intersection)
   end
 
-  # Convolves the other object's elements with this RangeSet.
-  # The result is stored in this RangeSet.
+  # Convolves the other object's elements with this IntervalSet.
+  # The result is stored in this IntervalSet.
   #
   # The result will contain all elements which can be obtained by adding
   # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
   #
   #   # Convolve with a range (effectively buffers the set)
-  #   RangeSet[0...4].convolve!(-1...2)  # -> [-1...6]
+  #   IntervalSet[0...4].convolve!(-1...2)  # -> [-1...6]
   #
   #   # Convolving with empty or reversed ranges result in an empty set.
-  #   RangeSet[0...4].convolve!(0...0)  # -> []
-  #   RangeSet[0...4].convolve!(1...0)  # -> []
+  #   IntervalSet[0...4].convolve!(0...0)  # -> []
+  #   IntervalSet[0...4].convolve!(1...0)  # -> []
   #
-  #   # Convolve with a range set
-  #   RangeSet[0...1, 10...12].convolve!(RangeSet[-2...1, 1...2]) # -> [-2...3, 8...14]
+  #   # Convolve with a interval set
+  #   IntervalSet[0...1, 10...12].convolve!(IntervalSet[-2...1, 1...2]) # -> [-2...3, 8...14]
   #
-  # @param other [Range | RangeSet] the other object.
-  # @return [RangeSet] self
+  # @param other [Range | IntervalSet] the other object.
+  # @return [IntervalSet] self
   def convolve!(other)
     case other
       when Range
         convolve_range!(other)
-      when RangeSet
-        convolve_range_set!(other)
+      when IntervalSet
+        convolve_interval_set!(other)
       else
-        RangeSet.unexpected_object(other)
+        IntervalSet.unexpected_object(other)
     end
   end
 
-  # Convolves the other object's elements with this RangeSet.
-  # The result is stored in a new RangeSet.
+  # Convolves the other object's elements with this IntervalSet.
+  # The result is stored in a new IntervalSet.
   #
   # The result will contain all elements which can be obtained by adding
   # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
   #
   #   # Convolve with a range (effectively buffers the set)
-  #   RangeSet[0...4] * (-1...2)  # -> [-1...6]
+  #   IntervalSet[0...4] * (-1...2)  # -> [-1...6]
   #
   #   # Convolving with empty or reversed ranges result in an empty set.
-  #   RangeSet[0...4] * (0...0)   # -> []
-  #   RangeSet[0...4] * (1...0)   # -> []
+  #   IntervalSet[0...4] * (0...0)   # -> []
+  #   IntervalSet[0...4] * (1...0)   # -> []
   #
-  #   # Convolve with a range set
-  #   RangeSet[0...1, 10...12] * RangeSet[-2...1, 1...2]  # -> [-2...3, 8...14]
+  #   # Convolve with a interval set
+  #   IntervalSet[0...1, 10...12] * IntervalSet[-2...1, 1...2]  # -> [-2...3, 8...14]
   #
-  # @param other [Range | RangeSet] the other object.
-  # @return [RangeSet] a new RangeSet containing the convolution.
+  # @param other [Range | IntervalSet] the other object.
+  # @return [IntervalSet] a new IntervalSet containing the convolution.
   def convolve(other)
     clone.convolve!(other)
   end
 
   alias_method :*, :convolve
 
-  # Shifts this RangeSet by the given amount.
-  # The result is stored in this RangeSet.
+  # Shifts this IntervalSet by the given amount.
+  # The result is stored in this IntervalSet.
   #
-  #   RangeSet[0...1].shift(1)    # -> [1...2]
+  #   IntervalSet[0...1].shift(1)    # -> [1...2]
   #
-  # Note that +shift(0)+ will not be optimized since RangeSet does
+  # Note that +shift(0)+ will not be optimized since IntervalSet does
   # not assume numbers as element type.
   #
   # @param amount [Object]
-  # @return [RangeSet] self.
+  # @return [IntervalSet] self.
   def shift!(amount)
     ranges = map {|range| range.first + amount...range.last + amount}
     clear
@@ -521,32 +521,32 @@ class RangeSet
     self
   end
 
-  # Shifts this RangeSet by the given amount.
-  # The result is stored in a new RangeSet.
+  # Shifts this IntervalSet by the given amount.
+  # The result is stored in a new IntervalSet.
   #
-  #   RangeSet[0...1].shift!(1)   # -> [1...2]
+  #   IntervalSet[0...1].shift!(1)   # -> [1...2]
   #
-  # Note that +shift!(0)+ will not be optimized since RangeSet does
+  # Note that +shift!(0)+ will not be optimized since IntervalSet does
   # not assume numbers as element type.
   #
   # @param amount [Object]
-  # @return [RangeSet] a new RangeSet shifted by +amount+.
+  # @return [IntervalSet] a new IntervalSet shifted by +amount+.
   def shift(amount)
     clone.shift!(amount)
   end
 
-  # Buffers this RangeSet by adding a left and right margin to each range.
-  # The result is stored in this RangeSet.
+  # Buffers this IntervalSet by adding a left and right margin to each range.
+  # The result is stored in this IntervalSet.
   #
-  #   RangeSet[1...2].buffer!(1, 2) # -> [0...4]
+  #   IntervalSet[1...2].buffer!(1, 2) # -> [0...4]
   #
   #   # negative values will shrink the ranges
-  #   RangeSet[0...4].buffer!(-1, -2) # -> [1...2]
-  #   RangeSet[1...2].buffer!(-0.5, -0.5) # -> []
+  #   IntervalSet[0...4].buffer!(-1, -2) # -> [1...2]
+  #   IntervalSet[1...2].buffer!(-0.5, -0.5) # -> []
   #
   # @param left [Object] margin added to the left side of each range.
   # @param right [Object] margin added to the right side of each range.
-  # @return [RangeSet] self.
+  # @return [IntervalSet] self.
   def buffer!(left, right)
     ranges = map do |range|
       range.first - left...range.last + right
@@ -560,24 +560,24 @@ class RangeSet
     self
   end
 
-  # Buffers this RangeSet by adding a left and right margin to each range.
-  # The result is stored in a new RangeSet.
+  # Buffers this IntervalSet by adding a left and right margin to each range.
+  # The result is stored in a new IntervalSet.
   #
-  #   RangeSet[1...2].buffer(1, 2)        # -> [0...4]
+  #   IntervalSet[1...2].buffer(1, 2)        # -> [0...4]
   #
   #   # negative values will shrink the ranges
-  #   RangeSet[0...4].buffer(-1, -2)      # -> [1...2]
-  #   RangeSet[1...2].buffer(-0.5, -0.5)  # -> []
+  #   IntervalSet[0...4].buffer(-1, -2)      # -> [1...2]
+  #   IntervalSet[1...2].buffer(-0.5, -0.5)  # -> []
   #
   # @param left [Object] margin added to the left side of each range.
   # @param right [Object] margin added to the right side of each range.
-  # @return [RangeSet] a new RangeSet containing the buffered ranges.
+  # @return [IntervalSet] a new IntervalSet containing the buffered ranges.
   def buffer(left, right)
     clone.buffer!(left, right)
   end
 
-  # Removes all elements from this RangeSet.
-  # @return [RangeSet] self.
+  # Removes all elements from this IntervalSet.
+  # @return [IntervalSet] self.
   def clear
     @range_map.clear
     @min = nil
@@ -594,29 +594,29 @@ class RangeSet
     @range_map.each_node {|node| yield node.value}
   end
 
-  # Returns a new RangeSet instance containing all ranges of this RangeSet.
-  # @return [RangeSet] the clone.
+  # Returns a new IntervalSet instance containing all ranges of this IntervalSet.
+  # @return [IntervalSet] the clone.
   def clone
-    RangeSet.new.copy(self)
+    IntervalSet.new.copy(self)
   end
 
-  # Replaces the content of this RangeSet by the content of the given RangeSet.
-  # @param range_set [RangeSet] the other RangeSet to be copied
-  # @return [RangeSet] self.
-  def copy(range_set)
+  # Replaces the content of this IntervalSet by the content of the given IntervalSet.
+  # @param interval_set [IntervalSet] the other IntervalSet to be copied
+  # @return [IntervalSet] self.
+  def copy(interval_set)
     clear
-    range_set.each {|range| put(range)}
-    @min = range_set.min
-    @max = range_set.max
+    interval_set.each {|range| put(range)}
+    @min = interval_set.min
+    @max = interval_set.max
 
     self
   end
 
-  # Returns a String representation of this RangeSet.
+  # Returns a String representation of this IntervalSet.
   #
-  #   RangeSet[].to_s             # -> "[]"
-  #   RangeSet[0...1].to_s        # -> "[0...1]"
-  #   RangeSet[0...1, 2...3].to_s # -> "[0...1, 2...3]"
+  #   IntervalSet[].to_s             # -> "[]"
+  #   IntervalSet[0...1].to_s        # -> "[0...1]"
+  #   IntervalSet[0...1, 2...3].to_s # -> "[0...1, 2...3]"
   #
   # @return [String] the String representation.
   def to_s
@@ -643,7 +643,7 @@ class RangeSet
   end
 
   def put(range)
-    @range_map.put(range.first, RangeSet.normalize_range(range))
+    @range_map.put(range.first, IntervalSet.normalize_range(range))
   end
 
   def put_and_update_bounds(range)
@@ -659,7 +659,7 @@ class RangeSet
   end
 
   def superset_range?(range)
-    return true if RangeSet.range_empty?(range)
+    return true if IntervalSet.range_empty?(range)
     return false if empty? || !bounds_intersected_by?(range)
 
     # left.min <= range.first
@@ -669,16 +669,16 @@ class RangeSet
     !left_entry.nil? && left_entry.value.last >= range.last
   end
 
-  def superset_range_set?(range_set)
-    return true if range_set == self || range_set.empty?
-    return false if empty? || !range_set.bounds_intersected_by?(bounds)
+  def superset_interval_set?(interval_set)
+    return true if interval_set == self || interval_set.empty?
+    return false if empty? || !interval_set.bounds_intersected_by?(bounds)
 
-    range_set.all? {|range| superset_range?(range)}
+    interval_set.all? {|range| superset_range?(range)}
   end
 
   def subset_range?(range)
     return true if empty?
-    return false if RangeSet.range_empty?(range)
+    return false if IntervalSet.range_empty?(range)
 
     empty? || (range.first <= min && range.last >= max)
   end
@@ -693,14 +693,14 @@ class RangeSet
     !left_entry.nil? && left_entry.value.last > range.first
   end
 
-  def intersect_range_set?(range_set)
-    return false if empty? || !bounds_intersected_by?(range_set.bounds)
+  def intersect_interval_set?(interval_set)
+    return false if empty? || !bounds_intersected_by?(interval_set.bounds)
 
-    sub_set(range_set.bounds).any? {|range| intersect_range?(range)}
+    sub_set(interval_set.bounds).any? {|range| intersect_range?(range)}
   end
 
   def eql_range?(range)
-    return true if empty? && RangeSet.range_empty?(range)
+    return true if empty? && IntervalSet.range_empty?(range)
 
     count == 1 && bounds == range
   end
@@ -715,13 +715,13 @@ class RangeSet
     bound_min = include_left ? left_entry.value.first : range.first
     sub_map = @range_map.sub_map(bound_min, range.last)
 
-    RangeSet.new(sub_map)
+    IntervalSet.new(sub_map)
   end
 
   def head_set(value)
     head_map = @range_map.head_map(value)
 
-    RangeSet.new(head_map)
+    IntervalSet.new(head_map)
   end
 
   def tail_set(value)
@@ -734,12 +734,12 @@ class RangeSet
     bound_min = include_left ? left_entry.value.first : value
     tail_map = @range_map.tail_map(bound_min)
 
-    RangeSet.new(tail_map)
+    IntervalSet.new(tail_map)
   end
 
   def add_range(range)
     # ignore empty or reversed ranges
-    return self if RangeSet.range_empty?(range)
+    return self if IntervalSet.range_empty?(range)
 
     # short cut
     unless bounds_intersected_or_touched_by?(range)
@@ -794,10 +794,10 @@ class RangeSet
     self
   end
 
-  def add_range_set(range_set)
-    return self if range_set == self || range_set.empty?
+  def add_interval_set(interval_set)
+    return self if interval_set == self || interval_set.empty?
 
-    range_set.each {|range| add_range(range)}
+    interval_set.each {|range| add_range(range)}
 
     self
   end
@@ -828,11 +828,11 @@ class RangeSet
     self
   end
 
-  def remove_range_set(range_set)
-    if range_set == self
+  def remove_interval_set(interval_set)
+    if interval_set == self
       clear
     else
-      range_set.each {|range| remove_range(range)}
+      interval_set.each {|range| remove_range(range)}
     end
 
     self
@@ -871,21 +871,21 @@ class RangeSet
     self
   end
 
-  def intersect_range_set(range_set)
-    return self if range_set == self
+  def intersect_interval_set(interval_set)
+    return self if interval_set == self
 
-    if range_set.empty? || !bounds_intersected_by?(range_set.bounds)
+    if interval_set.empty? || !bounds_intersected_by?(interval_set.bounds)
       clear
       return self
     end
 
-    intersection = range_set.sub_set(bounds).map do |range|
-      RangeSet.new.tap do |range_set_item|
-        range_set_item.add_range_set(sub_set(range))
-        range_set_item.intersect_range(range)
+    intersection = interval_set.sub_set(bounds).map do |range|
+      IntervalSet.new.tap do |interval_set_item|
+        interval_set_item.add_interval_set(sub_set(range))
+        interval_set_item.intersect_range(range)
       end
-    end.reduce do |acc, range_set_item|
-      acc.add_range_set(range_set_item); acc
+    end.reduce do |acc, interval_set_item|
+      acc.add_interval_set(interval_set_item); acc
     end
 
     @range_map = intersection.range_map
@@ -896,70 +896,70 @@ class RangeSet
   end
 
   def union_range(range)
-    new_range_set = RangeSet.new
-    new_range_set.add_range_set(self) unless subset_range?(range)
-    new_range_set.add_range(range)
+    new_interval_set = IntervalSet.new
+    new_interval_set.add_interval_set(self) unless subset_range?(range)
+    new_interval_set.add_range(range)
   end
 
-  def union_range_set(range_set)
-    new_range_set = clone
-    new_range_set.add_range_set(range_set)
+  def union_interval_set(interval_set)
+    new_interval_set = clone
+    new_interval_set.add_interval_set(interval_set)
   end
 
   def difference_range(range)
-    new_range_set = RangeSet.new
+    new_interval_set = IntervalSet.new
 
-    return new_range_set if subset_range?(range)
-    return new_range_set.copy(self) unless bounds_intersected_by?(range)
+    return new_interval_set if subset_range?(range)
+    return new_interval_set.copy(self) unless bounds_intersected_by?(range)
 
-    unless RangeSet.range_empty?(range)
-      new_range_set.add_range_set(head_set(range.first))
-      new_range_set.add_range_set(tail_set(range.last))
-      new_range_set.remove_range(range)
+    unless IntervalSet.range_empty?(range)
+      new_interval_set.add_interval_set(head_set(range.first))
+      new_interval_set.add_interval_set(tail_set(range.last))
+      new_interval_set.remove_range(range)
     end
   end
 
-  def difference_range_set(range_set)
-    new_range_set = RangeSet.new
+  def difference_interval_set(interval_set)
+    new_interval_set = IntervalSet.new
 
-    return new_range_set if range_set == self || empty?
+    return new_interval_set if interval_set == self || empty?
 
-    new_range_set.copy(self)
-    new_range_set.remove_range_set(range_set) if !range_set.empty? && bounds_intersected_by?(range_set.bounds)
-    new_range_set
+    new_interval_set.copy(self)
+    new_interval_set.remove_interval_set(interval_set) if !interval_set.empty? && bounds_intersected_by?(interval_set.bounds)
+    new_interval_set
   end
 
   def intersection_range(range)
-    new_range_set = RangeSet.new
+    new_interval_set = IntervalSet.new
 
-    return new_range_set unless bounds_intersected_by?(range)
-    return new_range_set.copy(self) if subset_range?(range)
+    return new_interval_set unless bounds_intersected_by?(range)
+    return new_interval_set.copy(self) if subset_range?(range)
 
-    new_range_set.add(sub_set(range))
-    new_range_set.intersect_range(range)
+    new_interval_set.add(sub_set(range))
+    new_interval_set.intersect_range(range)
   end
 
-  def intersection_range_set(range_set)
-    new_range_set = RangeSet.new
+  def intersection_interval_set(interval_set)
+    new_interval_set = IntervalSet.new
 
-    return new_range_set if range_set.empty? || !bounds_intersected_by?(range_set.bounds)
+    return new_interval_set if interval_set.empty? || !bounds_intersected_by?(interval_set.bounds)
 
-    new_range_set.add_range_set(self)
-    new_range_set.intersect_range_set(range_set.sub_set(bounds))
+    new_interval_set.add_interval_set(self)
+    new_interval_set.intersect_interval_set(interval_set.sub_set(bounds))
   end
 
   def convolve_range!(range)
-    if RangeSet.range_empty?(range)
+    if IntervalSet.range_empty?(range)
       clear
     else
       buffer!(-range.first, range.last)
     end
   end
 
-  def convolve_range_set!(range_set)
-    range_sets = range_set.map {|range| clone.convolve_range!(range)}
+  def convolve_interval_set!(interval_set)
+    interval_sets = interval_set.map {|range| clone.convolve_range!(range)}
     clear
-    range_sets.each {|rs| add_range_set(rs)}
+    interval_sets.each {|rs| add_interval_set(rs)}
 
     self
   end
