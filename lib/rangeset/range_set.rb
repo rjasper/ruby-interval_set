@@ -414,6 +414,41 @@ class RangeSet
 
   alias_method :-, :difference
 
+  # Calculates a new RangeSet which only contains elements exclusively from
+  # either this or the given object.
+  #
+  # This operation is equivalent to <code>(self | other) - (self & other)</code>
+  #
+  #   RangeSet[0...1] ^ RangeSet[1...2]               # -> [0...2]
+  #   RangeSet[0...2, 4...6] ^ RangeSet[1...5, 7...8] # -> [0...1, 2...4, 5...6, 7...8]
+  #   RangeSet[0...1] ^ RangeSet[0...1]               # -> []
+  #
+  # @param other [Range, RangeSet]
+  # @return [RangeSet] a new RangeSet containing the exclusive set.
+  def xor(other)
+    clone.xor!(other)
+  end
+
+  alias_method :^, :xor
+
+  # Calculates the set which contains elements exclusively from
+  # either this or the given object. The result of this operation
+  # is stored in this set.
+  #
+  # The resulting set is equivalent to <code>(self | other) - (self & other)</code>
+  #
+  #   RangeSet[0...1].xor!(RangeSet[1...2])               # -> [0...2]
+  #   RangeSet[0...2, 4...6].xor!(RangeSet[1...5, 7...8]) # -> [0...1, 2...4, 5...6, 7...8]
+  #   RangeSet[0...1].xor!(RangeSet[0...1])               # -> []
+  #
+  # @param other [Range, RangeSet]
+  # @return [RangeSet] a new RangeSet containing the exclusive set.
+  def xor!(other)
+    intersection = self & other
+
+    add(other).remove(intersection)
+  end
+
   # Convolves the other object's elements with this RangeSet.
   # The result is stored in this RangeSet.
   #

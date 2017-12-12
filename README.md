@@ -18,6 +18,10 @@ Or install it yourself as:
 
     $ gem install rangeset
 
+## Documentation
+
+http://www.rubydoc.info/github/rjasper/rangeset
+
 ## Usage
 
 Create a range set:
@@ -129,6 +133,14 @@ Calculate difference:
 
 ```ruby
 RangeSet[0...2, 3...5] - RangeSet[1...4, 5...6] # -> [0...1, 4...5]
+```
+
+Calculate exclusive set:
+
+```ruby
+RangeSet[0...1] ^ RangeSet[1...2] # -> [0...2]
+RangeSet[0...2, 4...6] ^ RangeSet[1...5, 7...8] # -> [0...1, 2...4, 5...6, 7...8]
+RangeSet[0...1] ^ RangeSet[0...1] # -> []
 ```
 
 Compare sets:

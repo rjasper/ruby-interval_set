@@ -834,6 +834,24 @@ class RangeSetTest < Minitest::Test
     assert_empty range_set - range_set
   end
 
+  def test_that_it_calculates_xor
+    assert_equal RangeSet[], RangeSet[] ^ (0..0)
+    assert_equal RangeSet[0...1], RangeSet[0...1] ^ (0..0)
+    assert_equal RangeSet[0...1], RangeSet[] ^ (0..1)
+    assert_equal RangeSet[], RangeSet[0...1] ^ (0..1)
+    assert_equal RangeSet[1...2], RangeSet[0...1] ^ (0..2)
+    assert_equal RangeSet[0...2], RangeSet[0...1] ^ (1..2)
+
+    assert_equal RangeSet[], RangeSet[] ^ RangeSet[]
+    assert_equal RangeSet[0...1], RangeSet[0...1] ^ RangeSet[]
+    assert_equal RangeSet[0...1], RangeSet[] ^ RangeSet[0...1]
+    assert_equal RangeSet[], RangeSet[0...1] ^ RangeSet[0...1]
+    assert_equal RangeSet[1...2], RangeSet[0...1] ^ RangeSet[0...2]
+    assert_equal RangeSet[0...2], RangeSet[0...1] ^ RangeSet[1...2]
+
+    assert_equal RangeSet[0...1, 2...4, 5...6, 7...8], RangeSet[0...2, 4...6] ^ RangeSet[1...5, 7...8]
+  end
+
   def test_that_it_shifts_numeric
     range_set = RangeSet[0...1, 2...3]
 
