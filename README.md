@@ -207,14 +207,14 @@ RangeSet[0...1].shift(1)    # -> [1...2]
 
 Note that `shift(0)` will not be optimized since RangeSet does not assume numbers as element type.
 
-Buffer by a given range:
+Buffer left and right:
 
 ```ruby
-RangeSet[1...2].buffer(-1...2)      # -> [0...4]
+RangeSet[1...2].buffer(1, 2) # -> [0...4]
 
-# reverse ranges will remove buffer 
-RangeSet[0...4].buffer(1...-2)      # -> [1...2] 
-RangeSet[1...2].buffer(0.5...-0.5)  # -> []
+# Negative values will shrink the ranges:
+RangeSet[0...4].buffer(-1, -2) # -> [1...2]
+RangeSet[1...2].buffer(-0.5, -0.5) # -> []
 ```
 
 Convolve sets: A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
@@ -226,11 +226,9 @@ RangeSet[0...1] * 1        # -> [1...2]
 # Convolve with a range (effectively buffers the set)
 RangeSet[0...4] * (-1...2) # -> [-1...6] 
 
-# Convolving with reversed ranges is also possible.  However,
-# the definition above doesn't apply anymore. Unfortunately,
-# I didn't come up with a better definition yet :(
-RangeSet[1...2] * (-1...2) # -> [0...4] 
-RangeSet[0...4] * (1...-2) # -> [1...2] 
+# Convolving with empty or reversed ranges result in an empty set.
+RangeSet[0...4] * (0...0)   # -> []
+RangeSet[0...4] * (1...0)   # -> []
 
 # Convolve with a range set
 RangeSet[0...1, 10...12] * RangeSet[-2...1, 1...2]  # -> [-2...3, 8...14] 

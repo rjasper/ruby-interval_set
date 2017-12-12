@@ -865,13 +865,13 @@ class RangeSetTest < Minitest::Test
   def test_that_it_buffers_range
     range_set = RangeSet[0...1, 4...5, 9...10]
 
-    assert_equal RangeSet[-1...7, 8...12], range_set.buffer(-1...2)
+    assert_equal RangeSet[-1...7, 8...12], range_set.buffer(1, 2)
   end
 
   def test_that_it_convolves_reversed_range
     range_set = RangeSet[0...10, 20...22]
 
-    assert_equal RangeSet[1...9], range_set * (1...-1)
+    assert_empty range_set * (1...-1)
   end
 
   def test_that_it_convolves_range_sets

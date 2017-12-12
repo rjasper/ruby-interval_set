@@ -433,9 +433,9 @@ class RangeSet
   #   # Convolve with a range (effectively buffers the set)
   #   RangeSet[0...4].convolve!(-1...2) # -> [-1...6]
   #
-  #   # Convolving with reversed ranges is also possible.
-  #   RangeSet[1...2].convolve!(-1...2) # -> [0...4]
-  #   RangeSet[0...4].convolve!(1...-2) # -> [1...2]
+  #   # Convolving with empty or reversed ranges result in an empty set.
+  #   RangeSet[0...4].convolve!(0...0)  # -> []
+  #   RangeSet[0...4].convolve!(1...0)  # -> []
   #
   #   # Convolve with a range set
   #   RangeSet[0...1, 10...12].convolve!(RangeSet[-2...1, 1...2]) # -> [-2...3, 8...14]
@@ -464,11 +464,9 @@ class RangeSet
   #   # Convolve with a range (effectively buffers the set)
   #   RangeSet[0...4] * (-1...2)  # -> [-1...6]
   #
-  #   # Convolving with reversed ranges is also possible.  However,
-  #   # the definition above doesn't apply anymore. Unfortunately,
-  #   # I didn't come up with a better definition yet :(
-  #   RangeSet[1...2] * (-1...2)  # -> [0...4]
-  #   RangeSet[0...4] * (1...-2)  # -> [1...2]
+  #   # Convolving with empty or reversed ranges result in an empty set.
+  #   RangeSet[0...4] * (0...0)   # -> []
+  #   RangeSet[0...4] * (1...0)   # -> []
   #
   #   # Convolve with a range set
   #   RangeSet[0...1, 10...12] * RangeSet[-2...1, 1...2]  # -> [-2...3, 8...14]
@@ -509,40 +507,45 @@ class RangeSet
     clone.shift!(amount)
   end
 
-  # Buffers this RangeSet by the given range.
+  # Buffers this RangeSet by adding a left and right margin to each range.
   # The result is stored in this RangeSet.
   #
-  # The values of each range will be shifted by the values specified
-  # by the given range.
+  #   RangeSet[1...2].buffer!(1, 2) # -> [0...4]
   #
-  #   RangeSet[1...2].buffer(-1...2)      # -> [0...4]
+  #   # negative values will shrink the ranges
+  #   RangeSet[0...4].buffer!(-1, -2) # -> [1...2]
+  #   RangeSet[1...2].buffer!(-0.5, -0.5) # -> []
   #
-  #   # reverse ranges will remove buffer
-  #   RangeSet[0...4].buffer(1...-2)      # -> [1...2]
-  #   RangeSet[1...2].buffer(0.5...-0.5)  # -> []
-  #
-  # @param range [Range]
+  # @param left [Object] margin added to the left side of each range.
+  # @param right [Object] margin added to the right side of each range.
   # @return [RangeSet] self.
-  def buffer!(range)
-    convolve_range!(range)
+  def buffer!(left, right)
+    ranges = map do |range|
+      range.first - left...range.last + right
+    end.select do |range|
+      range.first < range.last
+    end
+
+    clear
+    ranges.each {|r| add_range(r)}
+
+    self
   end
 
-  # Buffers this RangeSet by the given range.
+  # Buffers this RangeSet by adding a left and right margin to each range.
   # The result is stored in a new RangeSet.
   #
-  # The values of each range will be shifted by the values specified
-  # by the given range.
+  #   RangeSet[1...2].buffer(1, 2)        # -> [0...4]
   #
-  #   RangeSet[1...2].buffer!(-1...2)      # -> [0...4]
+  #   # negative values will shrink the ranges
+  #   RangeSet[0...4].buffer(-1, -2)      # -> [1...2]
+  #   RangeSet[1...2].buffer(-0.5, -0.5)  # -> []
   #
-  #   # reverse ranges will remove buffer
-  #   RangeSet[0...4].buffer!(1...-2)      # -> [1...2]
-  #   RangeSet[1...2].buffer!(0.5...-0.5)  # -> []
-  #
-  # @param range [Range]
+  # @param left [Object] margin added to the left side of each range.
+  # @param right [Object] margin added to the right side of each range.
   # @return [RangeSet] a new RangeSet containing the buffered ranges.
-  def buffer(range)
-    clone.buffer!(range)
+  def buffer(left, right)
+    clone.buffer!(left, right)
   end
 
   # Removes all elements from this RangeSet.
@@ -932,16 +935,11 @@ class RangeSet
   end
 
   def convolve_range!(range)
-    ranges = map do |r|
-      r.first + range.first...r.last + range.last
-    end.select do |r|
-      r.first < r.last
+    if RangeSet::range_empty?(range)
+      clear
+    else
+      buffer!(-range.first, range.last)
     end
-
-    clear
-    ranges.each {|r| add_range(r)}
-
-    self
   end
 
   def convolve_range_set!(range_set)
