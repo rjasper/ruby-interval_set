@@ -1,6 +1,6 @@
 require './test/test_helper'
 
-class RangeSetTest < Minitest::Test
+class IntervalSetTest < Minitest::Test
 
   def test_that_it_initializes
     assert IntervalSet[]

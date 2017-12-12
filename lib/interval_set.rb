@@ -1,4 +1,4 @@
-require_relative 'version'
+require_relative 'interval_set/version'
 require 'treemap-fork'
 
 # IntervalSet implements a set of sorted non-overlapping ranges.

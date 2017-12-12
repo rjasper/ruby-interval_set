@@ -7,7 +7,7 @@ IntervalSet implements a set of sorted non-overlapping ranges. A range's start i
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'rangeset'
+gem 'interval_set'
 ```
 
 And then execute:
@@ -16,11 +16,11 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install rangeset
+    $ gem install interval_set
 
 ## Documentation
 
-http://www.rubydoc.info/github/rjasper/rangeset
+http://www.rubydoc.info/github/rjasper/interval_set
 
 ## Usage
 
@@ -260,7 +260,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/rjasper/rangeset. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+Bug reports and pull requests are welcome on GitHub at https://github.com/rjasper/interval_set. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
 
 ## License
 
@@ -268,4 +268,4 @@ The gem is available as open source under the terms of the [MIT License](https:/
 
 ## Code of Conduct
 
-Everyone interacting in the Rangeset project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/rjasper/rangeset/blob/master/CODE_OF_CONDUCT.md).
+Everyone interacting in the IntervalSet project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/rjasper/interval_set/blob/master/CODE_OF_CONDUCT.md).

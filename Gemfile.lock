@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rangeset (0.1.0.pre.RC3.pre.SNAPSHOT)
+    interval_set (0.1.0.pre.SNAPSHOT)
       treemap-fork (~> 1.0, >= 1.0.4.2)
 
 GEM
@@ -16,9 +16,9 @@ PLATFORMS
 
 DEPENDENCIES
   bundler (~> 1.16)
+  interval_set!
   minitest (~> 5.0)
   rake (~> 10.0)
-  rangeset!
 
 BUNDLED WITH
    1.16.0

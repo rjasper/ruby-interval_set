@@ -4,13 +4,13 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'interval_set/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'rangeset'
+  spec.name          = 'interval_set'
   spec.version       = IntervalSet::VERSION
   spec.authors       = ['Rico Jasper']
   spec.email         = ['jasper.rico@gmail.com']
 
   spec.summary       = 'Set of sorted non-overlapping ranges'
-  spec.homepage      = 'https://github.com/rjasper/rangeset'
+  spec.homepage      = 'https://github.com/rjasper/interval_set'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
