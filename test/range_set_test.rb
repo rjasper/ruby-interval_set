@@ -39,11 +39,6 @@ class RangeSetTest < Minitest::Test
     assert !RangeSet[0...1].eql_set?(RangeSet[0...2])
   end
 
-  def test_that_it_does_not_equal_element
-    assert !RangeSet[].eql_set?(0)
-    assert !RangeSet[0...1].eql_set?(0)
-  end
-
   def test_that_it_equals_ranges
     assert RangeSet[].eql_set?(1...0)
     assert RangeSet[0...1].eql_set?(0...1)
@@ -122,20 +117,20 @@ class RangeSetTest < Minitest::Test
   def test_that_range_includes_range_set
     range_set = RangeSet[1...2]
 
-    assert range_set.included_by?(1...2) # both exact
-    assert range_set.included_by?(0...2) # right exact
-    assert range_set.included_by?(1...3) # left exact
-    assert range_set.included_by?(0...3) # both extra
+    assert range_set.subset?(1...2) # both exact
+    assert range_set.subset?(0...2) # right exact
+    assert range_set.subset?(1...3) # left exact
+    assert range_set.subset?(0...3) # both extra
   end
 
   def test_that_range_does_not_include_range_set
     range_set = RangeSet[1...2]
 
-    assert !range_set.included_by?(0...1) # on left
-    assert !range_set.included_by?(2...3) # on right
-    assert !range_set.included_by?(1...1.5) # not right
-    assert !range_set.included_by?(1.5...2) # not left
-    assert !range_set.included_by?(2...1) # reversed
+    assert !range_set.subset?(0...1) # on left
+    assert !range_set.subset?(2...3) # on right
+    assert !range_set.subset?(1...1.5) # not right
+    assert !range_set.subset?(1.5...2) # not left
+    assert !range_set.subset?(2...1) # reversed
   end
 
   def test_that_numeric_is_included
@@ -220,8 +215,6 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_is_subset
-    assert RangeSet[].subset?(0)
-
     assert RangeSet[].subset?(1...0)
     assert RangeSet[].subset?(0...1)
     assert RangeSet[0...1].subset?(0...1)
@@ -234,8 +227,6 @@ class RangeSetTest < Minitest::Test
   end
 
   def test_that_it_is_not_subset
-    assert !RangeSet[0...1].subset?(2)
-
     assert !RangeSet[0...1].subset?(1...0)
     assert !RangeSet[0...1].subset?(2...3)
 

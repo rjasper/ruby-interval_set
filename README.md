@@ -95,22 +95,6 @@ r = RangeSet[0...1]       # -> [0...1]
 r.include?(0)             # -> true
 r.include?(0.5)           # -> true
 r.include?(1)             # -> false ; a range's end is exclusive
-
-# You can also supply ranges
-r.include?(0...1)         # -> true
-r.include?(0...2)         # -> false ; the whole range must be included
-r.include?(0...0.5)       # -> true
-
-# .... and range sets as well
-r.include?(RangeSet[0...1])               # -> true
-r.include?(RangeSet[0...1, 2...3])        # -> false
-r.include?(RangeSet[0...0.25, 0.75...1])  # -> true
-
-# The other way around
-RangeSet[0...1].included_by?(0...1)               # -> true 
-RangeSet[0...1, 2...3].included_by?(0...1)        # -> false 
-RangeSet[0...0.25, 0.75...1].included_by?(0...1)  # -> true 
-
 ```
 
 Check intersection:
@@ -156,37 +140,32 @@ Compare sets:
 
 ```ruby
 # A > B is true iff A is a proper superset of B
-RangeSet[0...2] > RangeSet[0...1]   # -> true 
-RangeSet[0...2] > RangeSet[0...2]   # -> false 
-RangeSet[0...2] > RangeSet[1...3]   # -> false
+RangeSet[0...1] > RangeSet[0...1]          # -> false 
+RangeSet[0...2] > RangeSet[0...1]          # -> true 
+RangeSet[0...1] > RangeSet[1...3]          # -> false
 
 # A >= B is true iff A is equal to B or a proper superset
-RangeSet[0...2] >= RangeSet[0...1]  # -> true 
-RangeSet[0...2] >= RangeSet[0...2]  # -> true 
+RangeSet[0...1] >= RangeSet[0...1]         # -> true 
+RangeSet[0...2] >= RangeSet[0...1]         # -> true 
+RangeSet[0...1] >= RangeSet[0...1, 2...3]  # -> false
+RangeSet[0...3] >= RangeSet[0...1, 2...3]  # -> true
 
 # A < B is true iff A is a proper subset of B 
 # Iff A < B then A > B
-RangeSet[0...1] < RangeSet[0...2]   # -> true 
-RangeSet[1...3] < RangeSet[0...2]   # -> false 
-RangeSet[1...3] < RangeSet[0...2]   # -> false
+RangeSet[0...1] < RangeSet[0...2]          # -> true 
+RangeSet[1...3] < RangeSet[0...2]          # -> false 
+RangeSet[1...3] < RangeSet[0...2]          # -> false
 
 # A <= B is true iff A is equal to B or a proper subset
 # Iff A <= B then A >= B
-RangeSet[0...1] <= RangeSet[0...2]  # -> true 
-RangeSet[0...2] <= RangeSet[0...2]  # -> true 
+RangeSet[0...1] <= RangeSet[0...1]         # -> true
+RangeSet[0...1] <= RangeSet[0...2]         # -> true 
+RangeSet[0...1, 2...3] <= RangeSet[0...1]  # -> false 
+RangeSet[0...1, 2...3] <= RangeSet[0...3]  # -> true 
 
 # A == B
 RangeSet[0...1] == RangeSet[0...1]  # -> true
 RangeSet[0...1] == RangeSet[1...2]  # -> false
-
-# Compare to singleton and ranges
-RangeSet[0...1].superset?(0)        # -> true 
-RangeSet[0...1].superset?(1)        # -> false 
-RangeSet[0...1].subset?(0)          # -> false 
-RangeSet[].subset?(0)               # -> true 
-
-RangeSet[0...3].superset?(1...2)    # -> true 
-RangeSet[1...2].subset?(0...3)      # -> false 
 ```
 
 Use in case statements:

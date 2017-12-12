@@ -89,13 +89,12 @@ class RangeSet
   alias_method :==, :eql?
 
   # Returns +true+ if the other object represents a equal
-  # set of ranges as this RangeSet. Singletons will always evaluate to +false+.
+  # set of ranges as this RangeSet.
   #
-  #   RangeSet[1...2].eql_set?(1)               # -> false
   #   RangeSet[1...2].eql_set?(1...2)           # -> true
   #   RangeSet[1...2].eql_set?(RangeSet[1...2]) # -> true
   #
-  # @param other [Range | RangeSet | Object] the other object.
+  # @param other [Range | RangeSet] the other object.
   def eql_set?(other)
     case other
       when Range
@@ -103,7 +102,7 @@ class RangeSet
       when RangeSet
         eql?(other)
       else
-        false
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -117,48 +116,23 @@ class RangeSet
   #
   # @param element [Object]
   def include?(element)
-    include_element?(element)
+    floor_entry = @range_map.floor_entry(element)
+
+    !floor_entry.nil? && floor_entry.value.last > element
   end
 
   alias_method :===, :include?
 
-  # Returns +true+ if all elements of this RangeSet are
-  # included by the other object.
+  # Returns +true+ if this RangeSet includes all elements
+  # of the other object.
   #
-  #   RangeSet[0...1].included_by?(0...1)               # -> true
-  #   RangeSet[0...1, 2...3].included_by?(0...1)        # -> false
-  #   RangeSet[0...0.25, 0.75...1].included_by?(0...1)  # -> true
-  #
-  # @param other [Range | RangeSet | Object] the other object.
-  def included_by?(other)
-    return true if empty?
-
-    case other
-      when Range
-        included_by_range?(other)
-      when RangeSet
-        other.superset_range_set?(self)
-      else
-        false
-    end
-  end
-
-  alias_method :subset?, :included_by?
-  alias_method :<=, :included_by?
-
-  # Returns +true+ if this RangeSet contains all elements
-  # contained by the other object.
-  #
-  #   r = RangeSet[0...1]         # -> [0...1]
-  #
-  #   r.superset?(RangeSet[0...1])              # -> true
-  #   r.superset?(RangeSet[0...1, 2...3])       # -> false
-  #   r.superset?(RangeSet[0...0.25, 0.75...1]) # -> true
+  #   RangeSet[0...1] >= RangeSet[0...1]        # -> true
+  #   RangeSet[0...2] >= RangeSet[0...1]        # -> true
+  #   RangeSet[0...1] >= RangeSet[0...1, 2...3] # -> false
+  #   RangeSet[0...3] >= RangeSet[0...1, 2...3] # -> true
   #
   #   # You can also supply ranges
-  #   r.superset?(0...1)          # -> true
-  #   r.superset?(0...2)          # -> false ; the whole range must be included
-  #   r.superset?(0...0.5)        # -> true
+  #   RangeSet[0...2].superset?(0...1)  # -> true
   #
   # @param other [Range | RangeSet] the other object.
   def superset?(other)
@@ -168,11 +142,36 @@ class RangeSet
       when RangeSet
         superset_range_set?(other)
       else
-        raise ArgumentError.new("unexpected object #{other}")
+        RangeSet.unexpected_object(other)
     end
   end
 
   alias_method :>=, :superset?
+
+  # Returns +true+ if all elements of this RangeSet are
+  # included by the other object.
+  #
+  #   RangeSet[0...1] <= RangeSet[0...1]        # -> true
+  #   RangeSet[0...1] <= RangeSet[0...1, 2...3] # -> true
+  #   RangeSet[0...1, 2...3] <= RangeSet[0...1] # -> false
+  #   RangeSet[0...1, 2...3] <= RangeSet[0...3] # -> true
+  #
+  #   # You can also supply ranges
+  #   RangeSet[0...1, 2...3].subset?(0...3)    # -> true
+  #
+  # @param other [Range | RangeSet] the other object.
+  def subset?(other)
+    case other
+      when Range
+        subset_range?(other)
+      when RangeSet
+        other.superset_range_set?(self)
+      else
+        RangeSet.unexpected_object(other)
+    end
+  end
+
+  alias_method :<=, :subset?
 
   # Returns +true+ if this RangeSet is a proper superset of the other.
   #
@@ -180,14 +179,10 @@ class RangeSet
   #   RangeSet[0...2] > RangeSet[0...2] # -> false
   #   RangeSet[0...2] > RangeSet[1...3] # -> false
   #
-  #   # Compare to singletons
-  #   RangeSet[0...1].superset?(0)      # -> true
-  #   RangeSet[0...1].superset?(1)      # -> false ; a range's end is exclusive
-  #
   #   # Compare to ranges
   #   RangeSet[0...3].superset?(1...2)  # -> true
   #
-  # @param other [Range | RangeSet | Object] the other object.
+  # @param other [Range | RangeSet] the other object.
   def proper_superset?(other)
     !eql_set?(other) && superset?(other)
   end
@@ -195,20 +190,15 @@ class RangeSet
   alias_method :>, :proper_superset?
 
   # Return +true+ if this RangeSet is a proper subset of the other.
-  # The result for a singleton will only be +true+ if this RangeSet is empty.
   #
   #   RangeSet[0...1] < RangeSet[0...2] # -> true
   #   RangeSet[1...3] < RangeSet[0...2] # -> false
   #   RangeSet[1...3] < RangeSet[0...2] # -> false
   #
-  #   # Compare to singletons
-  #   RangeSet[0...1].subset?(0)        # -> false
-  #   RangeSet[].subset?(0)             # -> true
-  #
   #   # Compare to ranges
   #   RangeSet[1...2].subset?(0...3)    # -> false
   #
-  # @param other [Range | RangeSet | Object] the other object.
+  # @param other [Range | RangeSet] the other object.
   def proper_subset?(other)
     !eql_set?(other) && subset?(other)
   end
@@ -223,7 +213,7 @@ class RangeSet
   #
   # @param range [Range]
   def bounds_intersected_by?(range)
-    return false if RangeSet::range_empty?(range)
+    return false if RangeSet.range_empty?(range)
 
     !empty? && range.first < max && range.last > min
   end
@@ -237,7 +227,7 @@ class RangeSet
   #
   # @param range [Range]
   def bounds_intersected_or_touched_by?(range)
-    return false if RangeSet::range_empty?(range)
+    return false if RangeSet.range_empty?(range)
 
     !empty? && range.first <= max && range.last >= min
   end
@@ -270,7 +260,7 @@ class RangeSet
       when RangeSet
         intersect_range_set?(other)
       else
-        include_element?(other)
+        include?(other)
     end
   end
 
@@ -311,7 +301,7 @@ class RangeSet
       when RangeSet
         add_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{other}")
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -334,7 +324,7 @@ class RangeSet
       when RangeSet
         remove_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{other}")
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -356,7 +346,7 @@ class RangeSet
       when RangeSet
         intersect_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{other}")
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -376,7 +366,7 @@ class RangeSet
       when RangeSet
         intersection_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{other}")
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -399,7 +389,7 @@ class RangeSet
       when RangeSet
         union_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{other}")
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -423,7 +413,7 @@ class RangeSet
       when RangeSet
         difference_range_set(other)
       else
-        raise ArgumentError.new("unexpected object #{other}")
+        RangeSet.unexpected_object(other)
     end
   end
 
@@ -623,7 +613,7 @@ class RangeSet
   end
 
   def put(range)
-    @range_map.put(range.first, RangeSet::normalize_range(range))
+    @range_map.put(range.first, RangeSet.normalize_range(range))
   end
 
   def put_and_update_bounds(range)
@@ -638,14 +628,8 @@ class RangeSet
     end
   end
 
-  def include_element?(object)
-    floor_entry = @range_map.floor_entry(object)
-
-    !floor_entry.nil? && floor_entry.value.last > object
-  end
-
   def superset_range?(range)
-    return true if RangeSet::range_empty?(range)
+    return true if RangeSet.range_empty?(range)
     return false if empty? || !bounds_intersected_by?(range)
 
     # left.min <= range.first
@@ -662,8 +646,9 @@ class RangeSet
     range_set.all? {|range| superset_range?(range)}
   end
 
-  def included_by_range?(range)
-    return false if RangeSet::range_empty?(range)
+  def subset_range?(range)
+    return true if empty?
+    return false if RangeSet.range_empty?(range)
 
     empty? || (range.first <= min && range.last >= max)
   end
@@ -685,7 +670,7 @@ class RangeSet
   end
 
   def eql_range?(range)
-    return true if empty? && RangeSet::range_empty?(range)
+    return true if empty? && RangeSet.range_empty?(range)
 
     count == 1 && bounds == range
   end
@@ -724,7 +709,7 @@ class RangeSet
 
   def add_range(range)
     # ignore empty or reversed ranges
-    return self if RangeSet::range_empty?(range)
+    return self if RangeSet.range_empty?(range)
 
     # short cut
     unless bounds_intersected_or_touched_by?(range)
@@ -733,7 +718,7 @@ class RangeSet
     end
 
     # short cut
-    if included_by_range?(range)
+    if subset_range?(range)
       clear
       put_and_update_bounds(range)
       return self
@@ -829,7 +814,7 @@ class RangeSet
       return self
     end
 
-    return self if included_by_range?(range)
+    return self if subset_range?(range)
 
     # left_map.min < range.first
     left_map = @range_map.head_map(range.first, false)
@@ -882,7 +867,7 @@ class RangeSet
 
   def union_range(range)
     new_range_set = RangeSet.new
-    new_range_set.add_range_set(self) unless included_by_range?(range)
+    new_range_set.add_range_set(self) unless subset_range?(range)
     new_range_set.add_range(range)
   end
 
@@ -894,10 +879,10 @@ class RangeSet
   def difference_range(range)
     new_range_set = RangeSet.new
 
-    return new_range_set if included_by_range?(range)
+    return new_range_set if subset_range?(range)
     return new_range_set.copy(self) unless bounds_intersected_by?(range)
 
-    unless RangeSet::range_empty?(range)
+    unless RangeSet.range_empty?(range)
       new_range_set.add_range_set(head_set(range.first))
       new_range_set.add_range_set(tail_set(range.last))
       new_range_set.remove_range(range)
@@ -918,7 +903,7 @@ class RangeSet
     new_range_set = RangeSet.new
 
     return new_range_set unless bounds_intersected_by?(range)
-    return new_range_set.copy(self) if included_by_range?(range)
+    return new_range_set.copy(self) if subset_range?(range)
 
     new_range_set.add(sub_set(range))
     new_range_set.intersect_range(range)
@@ -943,7 +928,7 @@ class RangeSet
   end
 
   def convolve_range!(range)
-    if RangeSet::range_empty?(range)
+    if RangeSet.range_empty?(range)
       clear
     else
       buffer!(-range.first, range.last)
@@ -976,6 +961,10 @@ class RangeSet
 
   def self.normalize_range(range)
     range.exclude_end? ? range : range.first...range.last
+  end
+  
+  def self.unexpected_object(object)
+    raise ArgumentError.new("unexpected object #{object}")
   end
 
 end
