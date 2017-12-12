@@ -65,7 +65,7 @@ class RangeSet
   #   RangeSet[0...1, 2...3].bounds # -> 0...3
   #   RangeSet[].bounds             # -> nil
   #
-  # @return [Range] a range from lower to upper bound.
+  # @return [Range] a range from lower to upper bound or +nil+ if empty.
   def bounds
     empty? ? nil : min...max
   end
