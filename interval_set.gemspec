@@ -13,6 +13,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/rjasper/ruby-interval_set'
   spec.license       = 'MIT'
 
+  spec.required_ruby_version = '>= 1.9.2'
+
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
   end
