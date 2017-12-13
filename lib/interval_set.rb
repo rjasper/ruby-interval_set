@@ -77,7 +77,7 @@ class IntervalSet
   #
   # @param other [Object] the other object.
   def eql?(other)
-    return false if other.nil? || count != other.count || bounds != other.bounds
+    return false if other.nil? || !other.is_a?(IntervalSet) || count != other.count || bounds != other.bounds
 
     lhs_iter = enum_for
     rhs_iter = other.enum_for
