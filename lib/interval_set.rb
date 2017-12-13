@@ -248,7 +248,7 @@ class IntervalSet
   #   i.intersect?(IntervalSet[0...1, 2...3])  # -> true
   #   i.intersect?(IntervalSet[2...3])         # -> false
   #
-  # @param other [Range | IntervalSet | #<=>] the other object.
+  # @param other [Range | IntervalSet] the other object.
   def intersect?(other)
     case other
       when Range
@@ -271,7 +271,7 @@ class IntervalSet
   #   i << (1...2)                # -> [0...3]
   #   i.count                     # -> 1
   #
-  # @return [Integer] the number of ranges.
+  # @return [Fixnum] the number of ranges.
   def count
     @range_map.count
   end
