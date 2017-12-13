@@ -75,10 +75,9 @@ class IntervalSet
   #   IntervalSet[0...1] == IntervalSet[0...1]  # -> true
   #   IntervalSet[0...1] == IntervalSet[1...2]  # -> false
   #
-  # @param other [IntervalSet] the other IntervalSet.
+  # @param other [Object] the other object.
   def eql?(other)
-    return false if count != other.count
-    return false if bounds != other.bounds
+    return false if other.nil? || count != other.count || bounds != other.bounds
 
     lhs_iter = enum_for
     rhs_iter = other.enum_for
@@ -985,7 +984,7 @@ class IntervalSet
   def self.normalize_range(range)
     range.exclude_end? ? range : range.first...range.last
   end
-  
+
   def self.unexpected_object(object)
     raise ArgumentError.new("unexpected object #{object}")
   end
