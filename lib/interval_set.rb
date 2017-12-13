@@ -7,13 +7,13 @@ class IntervalSet
   include Enumerable
 
   # Builds a new IntervalSet from the supplied ranges. Overlapping ranges will be merged.
-  #   IntervalSet[]                # -> []
-  #   IntervalSet[0...1]           # -> [0...1]
-  #   IntervalSet[0...1, 2...3]    # -> [0...1, 2...3]
-  #   IntervalSet[0...1, 1...2]    # -> [0...2]
+  #   IntervalSet[]               # -> []
+  #   IntervalSet[0...1]          # -> [0...1]
+  #   IntervalSet[0...1, 2...3]   # -> [0...1, 2...3]
+  #   IntervalSet[0...1, 1...2]   # -> [0...2]
   #
   #   array = [0...1, 2...3]
-  #   IntervalSet[*array]          # -> [0...1, 2...3]
+  #   IntervalSet[*array]         # -> [0...1, 2...3]
   #
   # @param ranges [Range[]] a list of ranges to be added to the new IntervalSet
   # @return [IntervalSet] a new IntervalSet containing the supplied ranges.
@@ -107,7 +107,7 @@ class IntervalSet
 
   # Returns +true+ if this IntervalSet contains the given element.
   #
-  #   i = IntervalSet[0...1]         # -> [0...1]
+  #   i = IntervalSet[0...1]      # -> [0...1]
   #
   #   i.include?(0)               # -> true
   #   i.include?(0.5)             # -> true
@@ -239,7 +239,7 @@ class IntervalSet
   # Returns +true+ if the given object has any common elements with
   # this IntervalSet.
   #
-  #   i = IntervalSet[0...1]         # -> [0...1]
+  #   i = IntervalSet[0...1]      # -> [0...1]
   #
   #   # Ranges only need a single common element with the interval set
   #   i.intersect?(0...1)         # -> true
@@ -265,7 +265,7 @@ class IntervalSet
 
   # Counts the number of ranges contained by this IntervalSet.
   #
-  #   i = IntervalSet[]              # -> []
+  #   i = IntervalSet[]           # -> []
   #   i.count                     # -> 0
   #   i << (0...1)                # -> [0...1]
   #   i.count                     # -> 1
@@ -282,10 +282,10 @@ class IntervalSet
   # Adds the other object's elements to this IntervalSet.
   # The result is stored in this IntervalSet.
   #
-  #   IntervalSet.new.add(0...1)     # -> [0...1]
-  #   IntervalSet.new << (0...1)     # -> [0...1]
+  #   IntervalSet.new.add(0...1)  # -> [0...1]
+  #   IntervalSet.new << (0...1)  # -> [0...1]
   #
-  #   i = IntervalSet.new            # -> []
+  #   i = IntervalSet.new         # -> []
   #   i << (0...1)                # -> [0...1]
   #   i << (2...3)                # -> [0...1, 2...3]
   #   i << (1...2)                # -> [0...3]
@@ -310,7 +310,7 @@ class IntervalSet
   # Removes the other object's elements from this IntervalSet.
   # The result is stored in this IntervalSet.
   #
-  #   i = IntervalSet[0...10]        # -> [0...10]
+  #   i = IntervalSet[0...10]     # -> [0...10]
   #   i.remove(0...2)             # -> [8...10]
   #   i >> (2...8)                # -> [0...2, 8...10]
   #
@@ -334,7 +334,7 @@ class IntervalSet
   # The result is stored in this IntervalSet.
   #
   #   i = IntervalSet[0...2, 3...5].intersect(1...5) # -> [1...2, 3...5]
-  #   i                                           # -> [1...2, 3...5]
+  #   i                                              # -> [1...2, 3...5]
   #
   # @param other [Range, IntervalSet] the other object.
   # @return [IntervalSet] self.
@@ -460,7 +460,7 @@ class IntervalSet
   # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
   #
   #   # Convolve with a range (effectively buffers the set)
-  #   IntervalSet[0...4].convolve!(-1...2)  # -> [-1...6]
+  #   IntervalSet[0...4].convolve!(-1...2) # -> [-1...6]
   #
   #   # Convolving with empty or reversed ranges result in an empty set.
   #   IntervalSet[0...4].convolve!(0...0)  # -> []
@@ -489,11 +489,11 @@ class IntervalSet
   # any pair of elements from both sets. A ∗ B = { a + b | a ∈ A ∧ b ∈ B }
   #
   #   # Convolve with a range (effectively buffers the set)
-  #   IntervalSet[0...4] * (-1...2)  # -> [-1...6]
+  #   IntervalSet[0...4] * (-1...2) # -> [-1...6]
   #
   #   # Convolving with empty or reversed ranges result in an empty set.
-  #   IntervalSet[0...4] * (0...0)   # -> []
-  #   IntervalSet[0...4] * (1...0)   # -> []
+  #   IntervalSet[0...4] * (0...0)  # -> []
+  #   IntervalSet[0...4] * (1...0)  # -> []
   #
   #   # Convolve with a interval set
   #   IntervalSet[0...1, 10...12] * IntervalSet[-2...1, 1...2]  # -> [-2...3, 8...14]
@@ -509,7 +509,7 @@ class IntervalSet
   # Shifts this IntervalSet by the given amount.
   # The result is stored in this IntervalSet.
   #
-  #   IntervalSet[0...1].shift(1)    # -> [1...2]
+  #   IntervalSet[0...1].shift(1)   # -> [1...2]
   #
   # Note that +shift(0)+ will not be optimized since IntervalSet does
   # not assume numbers as element type.
@@ -528,7 +528,7 @@ class IntervalSet
   # Shifts this IntervalSet by the given amount.
   # The result is stored in a new IntervalSet.
   #
-  #   IntervalSet[0...1].shift!(1)   # -> [1...2]
+  #   IntervalSet[0...1].shift!(1)  # -> [1...2]
   #
   # Note that +shift!(0)+ will not be optimized since IntervalSet does
   # not assume numbers as element type.
@@ -567,11 +567,11 @@ class IntervalSet
   # Buffers this IntervalSet by adding a left and right margin to each range.
   # The result is stored in a new IntervalSet.
   #
-  #   IntervalSet[1...2].buffer(1, 2)        # -> [0...4]
+  #   IntervalSet[1...2].buffer(1, 2)       # -> [0...4]
   #
   #   # negative values will shrink the ranges
-  #   IntervalSet[0...4].buffer(-1, -2)      # -> [1...2]
-  #   IntervalSet[1...2].buffer(-0.5, -0.5)  # -> []
+  #   IntervalSet[0...4].buffer(-1, -2)     # -> [1...2]
+  #   IntervalSet[1...2].buffer(-0.5, -0.5) # -> []
   #
   # @param left [Object] margin added to the left side of each range.
   # @param right [Object] margin added to the right side of each range.
