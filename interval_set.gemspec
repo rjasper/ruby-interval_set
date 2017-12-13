@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['jasper.rico@gmail.com']
 
   spec.summary       = 'Set of sorted non-overlapping ranges'
-  spec.homepage      = 'https://github.com/rjasper/interval_set'
+  spec.homepage      = 'https://github.com/rjasper/ruby-interval_set'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0").reject do |f|
