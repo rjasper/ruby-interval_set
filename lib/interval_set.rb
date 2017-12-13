@@ -116,6 +116,8 @@ class IntervalSet
   #
   # @param element [Object]
   def include?(element)
+    return false if element.nil?
+
     floor_entry = @range_map.floor_entry(element)
 
     !floor_entry.nil? && floor_entry.value.last > element
