@@ -1,5 +1,7 @@
 # IntervalSet
 
+[![Build Status](https://travis-ci.org/rjasper/ruby-interval_set.svg?branch=master)](https://travis-ci.org/rjasper/ruby-interval_set)
+
 IntervalSet implements a set of sorted non-overlapping ranges. A range's start is always interpreted as inclusive while the end is exclusive.
 
 ## Installation
