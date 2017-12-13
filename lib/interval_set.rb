@@ -113,6 +113,9 @@ class IntervalSet
   #   i.include?(0.5)             # -> true
   #   i.include?(1)               # -> false ; a range's end is exclusive
   #
+  # Note that the given element must be comparable to elements already in this
+  # set. Otherwise, the behavior is undefined.
+  #
   # @param element [Object]
   def include?(element)
     return false if element.nil?
