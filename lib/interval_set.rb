@@ -24,15 +24,8 @@ class IntervalSet
   end
 
   # Returns an empty instance of IntervalSet.
-  # @param range_map [TreeMap] a TreeMap of ranges. For internal use only.
-  def initialize(range_map = TreeMap.new)
-    unless range_map.instance_of?(TreeMap) || range_map.instance_of?(TreeMap::BoundedMap)
-      raise ArgumentError.new("invalid range_map #{range_map}")
-    end
-
-    @range_map = range_map
-
-    update_bounds
+  def initialize
+    @range_map = TreeMap.new
   end
 
   def marshal_dump
@@ -651,6 +644,12 @@ class IntervalSet
 
   protected
 
+  def initialize_with_range_map(range_map)
+    @range_map = range_map
+    update_bounds
+    self
+  end
+
   def range_map
     @range_map
   end
@@ -728,13 +727,13 @@ class IntervalSet
     bound_min = include_left ? left_entry.value.first : range.first
     sub_map = @range_map.sub_map(bound_min, range.last)
 
-    IntervalSet.new(sub_map)
+    IntervalSet.allocate.initialize_with_range_map(sub_map)
   end
 
   def head_set(value)
     head_map = @range_map.head_map(value)
 
-    IntervalSet.new(head_map)
+    IntervalSet.allocate.initialize_with_range_map(head_map)
   end
 
   def tail_set(value)
@@ -747,7 +746,7 @@ class IntervalSet
     bound_min = include_left ? left_entry.value.first : value
     tail_map = @range_map.tail_map(bound_min)
 
-    IntervalSet.new(tail_map)
+    IntervalSet.allocate.initialize_with_range_map(tail_map)
   end
 
   def add_range(range)

@@ -14,7 +14,7 @@ RSpec.describe IntervalSet do
       expect(I[]).to be_empty
     end
   end
-  
+
   context '#min #max and #bounds' do
     it 'has no bounds when empty' do
       expect(I[].min).to be_nil
@@ -61,7 +61,11 @@ RSpec.describe IntervalSet do
       tree_map.put(0, 0...1)
       tree_map.put(2, 2...3)
 
-      i = I.new(tree_map)
+      I2 = Class.new(I) do
+        public :initialize_with_range_map
+      end
+
+      i = I2.allocate.initialize_with_range_map(tree_map)
 
       expect(i.min).to eq(0)
       expect(i.max).to eq(3)
@@ -317,7 +321,7 @@ RSpec.describe IntervalSet do
     it 'does not include nil' do
       expect(I[]).to_not include(nil)
     end
-    
+
     it 'includes numbers' do
       i = I[1...2]
 
@@ -333,7 +337,7 @@ RSpec.describe IntervalSet do
       expect(i).to_not include(3)
     end
   end
-  
+
   context '#intersect?' do
     it 'intersects range' do
       i = I[0...1, 2...3]
@@ -364,7 +368,7 @@ RSpec.describe IntervalSet do
       expect(i).to_not be_intersect(1...0) # reversed range
     end
   end
-  
+
   context '#bounds_intersected by?' do
     it 'has intersecting bounds' do
       i = I[1...2]
@@ -385,7 +389,7 @@ RSpec.describe IntervalSet do
       expect(i).to_not be_bounds_intersected_by(1...0) # reversed
     end
   end
-  
+
   context '#add' do
     it 'does not add empty range' do
       i = I[]
@@ -485,7 +489,7 @@ RSpec.describe IntervalSet do
     it 'adds right overlapping' do
       i = I[-2...0]
 
-      i<< (-1...1)
+      i << (-1...1)
 
       expect(i).to eq(I[-2...1])
     end
@@ -520,7 +524,7 @@ RSpec.describe IntervalSet do
       expect(I.new.add(0..1).to_a).to eq([0...1,])
     end
   end
-  
+
   context '#remove' do
     it 'removes from empty' do
       i = I[] >> (1...2)
@@ -627,7 +631,7 @@ RSpec.describe IntervalSet do
       expect(i).to be_empty
     end
   end
-  
+
   context '#clear' do
     it 'clears' do
       i = I[1...2]
@@ -639,7 +643,7 @@ RSpec.describe IntervalSet do
       expect(i).to be_empty
     end
   end
-  
+
   context '#intersection' do
     it 'intersects empty' do
       expect(I[] & (0...1)).to be_empty
@@ -717,7 +721,7 @@ RSpec.describe IntervalSet do
       expect(i & i).to eq(I[0...1, 2...3])
     end
   end
-  
+
   context '#union' do
     it 'unions empty' do
       lhs = I[]
@@ -794,7 +798,7 @@ RSpec.describe IntervalSet do
       expect(i | i).to eq(I[0...1])
     end
   end
-  
+
   context '#difference' do
     it 'differences empty' do
       lhs = I[]
@@ -871,7 +875,7 @@ RSpec.describe IntervalSet do
       expect(i - i).to be_empty
     end
   end
-  
+
   context '#xor' do
     it 'calculates xor' do
       expect(I[] ^ (0..0)).to eq(I[])
@@ -891,7 +895,7 @@ RSpec.describe IntervalSet do
       expect(I[0...2, 4...6] ^ I[1...5, 7...8]).to eq(I[0...1, 2...4, 5...6, 7...8])
     end
   end
-  
+
   context '#shift' do
     it 'shifts numeric' do
       i = I[0...1, 2...3]
@@ -899,7 +903,7 @@ RSpec.describe IntervalSet do
       expect(i.shift(1)).to eq(I[1...2, 3...4])
     end
   end
-  
+
   context '#buffer' do
     it 'buffers range' do
       i = I[0...1, 4...5, 9...10]
@@ -907,7 +911,7 @@ RSpec.describe IntervalSet do
       expect(i.buffer(1, 2)).to eq(I[-1...7, 8...12])
     end
   end
-  
+
   context '#convolve' do
     it 'convolves range' do
       i = I[0...1, 4...5, 9...10]
