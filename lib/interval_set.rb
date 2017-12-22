@@ -35,6 +35,15 @@ class IntervalSet
     update_bounds
   end
 
+  def marshal_dump
+    to_a
+  end
+
+  def marshal_load(ranges)
+    initialize
+    ranges.each {|range| add(range)}
+  end
+
   # Returns +true+ if this IntervalSet contains no ranges.
   def empty?
     @range_map.empty?

@@ -949,4 +949,23 @@ RSpec.describe IntervalSet do
       expect(lhs * rhs).to be_empty
     end
   end
+
+  context 'marshalling' do
+    it 'dumps an array' do
+      expect(I[1...2, 3...4].marshal_dump).to be == [1...2, 3...4]
+    end
+
+    it 'loads from array' do
+      interval_set = I.allocate
+      interval_set.marshal_load([1...2, 3...4])
+
+      expect(interval_set).to be == I[1...2, 3...4]
+    end
+
+    it 'marshals correctly' do
+      data = Marshal.dump(I[1...2, 3...4])
+
+      expect(Marshal.load(data)).to be == I[1..2, 3..4]
+    end
+  end
 end
