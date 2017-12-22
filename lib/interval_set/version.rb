@@ -1,3 +1,3 @@
 class IntervalSet
-  VERSION = '0.1.2-SNAPSHOT'
+  VERSION = '0.2.0'
 end
