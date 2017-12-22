@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    interval_set (0.2.0)
+    interval_set (0.2.1.pre.SNAPSHOT)
       treemap-fork (~> 1.0, >= 1.0.4.2)
 
 GEM
@@ -36,4 +36,4 @@ DEPENDENCIES
   rspec (~> 3.7)
 
 BUNDLED WITH
-   1.16.0
+   1.16.1
