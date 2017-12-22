@@ -338,6 +338,27 @@ RSpec.describe IntervalSet do
     end
   end
 
+  context '#include_or_limit?' do
+    it 'does not include nil' do
+      expect(I[]).to_not be_include_or_limit(nil)
+    end
+
+    it 'includes numbers' do
+      i = I[1...2]
+
+      expect(i).to be_include_or_limit(1)
+      expect(i).to be_include_or_limit(1.5)
+      expect(i).to be_include_or_limit(2)
+    end
+
+    it 'does not include numbers' do
+      i = I[1...2]
+
+      expect(i).to_not be_include_or_limit(0)
+      expect(i).to_not be_include_or_limit(3)
+    end
+  end
+
   context '#intersect?' do
     it 'intersects range' do
       i = I[0...1, 2...3]

@@ -129,6 +129,32 @@ class IntervalSet
 
   alias_method :===, :include?
 
+  # Returns +true+ if the closure of this IntervalSet contains the given element.
+  #
+  # The closure of a set +S+ is defined as the set containing all elements of +S+
+  # but also its limit points.
+  #
+  # It will always return +true+ if #include? returns +true+ but in addition it
+  # will also return +true+ if the exclusive end of a range is included.
+  #
+  #   i = IntervalSet[0...1]      # -> [0...1]
+  #
+  #   i.include_or_limit?(0)      # -> true
+  #   i.include_or_limit?(0.5)    # -> true
+  #   i.include_or_limit?(1)      # -> true
+  #
+  # Note that the given element must be comparable to elements already in this
+  # set. Otherwise, the behavior is undefined.
+  #
+  # @param element [Object]
+  def include_or_limit?(element)
+    return false if element.nil?
+
+    floor_entry = @range_map.floor_entry(element)
+
+    !floor_entry.nil? && floor_entry.value.last >= element
+  end
+
   # Returns +true+ if this IntervalSet includes all elements
   # of the other object.
   #
