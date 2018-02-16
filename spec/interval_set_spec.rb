@@ -703,6 +703,10 @@ RSpec.describe IntervalSet do
       expect(I[0...1] & (0.25...0.75)).to eq(I[0.25...0.75])
     end
 
+    it 'intersects interleaved' do
+      expect(I[3...4] & I[1...2, 5...6]).to be_empty
+    end
+
     it 'intersects entire set' do
       expect(I[0...1] & (-1...2)).to eq(I[0...1])
     end
