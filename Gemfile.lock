@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    interval_set (0.2.3)
+    interval_set (0.2.4.pre.SNAPSHOT)
       treemap-fork (~> 1.0, >= 1.0.4.2)
 
 GEM
