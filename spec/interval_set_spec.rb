@@ -676,64 +676,43 @@ RSpec.describe IntervalSet do
     end
 
     it 'intersects left' do
-      i = I[0...1]
-
-      expect(i & (-2...-1)).to be_empty
+      expect(I[0...1] & (-2...-1)).to be_empty
     end
 
     it 'intersects right' do
-      i = I[0...1]
-
-      expect(i & (2...3)).to be_empty
+      expect(I[0...1] & (2...3)).to be_empty
     end
 
     it 'intersects tight left' do
-      i = I[0...1]
-
-      expect(i & (-2...0)).to be_empty
+      expect(I[0...1] & (-2...0)).to be_empty
     end
 
     it 'intersects tight right' do
-      i = I[0...1]
-
-      expect(i & (1...3)).to be_empty
+      expect(I[0...1] & (1...3)).to be_empty
     end
 
     it 'intersects left overlap' do
-      i = I[0...1]
-
-      expect(i & (-2...0.5)).to eq(I[0...0.5])
+      expect(I[0...1] & (-2...0.5)).to eq(I[0...0.5])
     end
 
     it 'intersects right overlap' do
-      i = I[0...1]
-
-      expect(i & (0.5...3)).to eq(I[0.5...1])
+      expect(I[0...1] & (0.5...3)).to eq(I[0.5...1])
     end
 
     it 'intersects inbetween' do
-      i = I[0...1]
-
-      expect(i & (0.25...0.75)).to eq(I[0.25...0.75])
+      expect(I[0...1] & (0.25...0.75)).to eq(I[0.25...0.75])
     end
 
     it 'intersects entire set' do
-      i = I[0...1]
-
-      expect(i & (-1...2)).to eq(I[0...1])
+      expect(I[0...1] & (-1...2)).to eq(I[0...1])
     end
 
     it 'intersects bounds' do
-      i = I[0...1]
-
-      expect(i & (0...1)).to eq(I[0...1])
+      expect(I[0...1] & (0...1)).to eq(I[0...1])
     end
 
     it 'intersects interval set' do
-      i1 = I[0...2, 3...5]
-      i2 = I[1...4, 6...7]
-
-      expect(i1 & i2).to eq(I[1...2, 3...4])
+      expect(I[0...2, 3...5] & I[1...4, 6...7]).to eq(I[1...2, 3...4])
     end
 
     it 'intersects itself' do
