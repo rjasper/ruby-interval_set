@@ -922,7 +922,7 @@ class IntervalSet
         interval_set_item.add_interval_set(sub_set(range))
         interval_set_item.intersect_range(range)
       end
-    end.reduce do |acc, interval_set_item|
+    end.reduce(IntervalSet.new) do |acc, interval_set_item|
       acc.add_interval_set(interval_set_item); acc
     end
 
