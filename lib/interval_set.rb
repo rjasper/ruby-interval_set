@@ -983,7 +983,7 @@ class IntervalSet
     return new_interval_set if interval_set.empty? || !bounds_intersected_by?(interval_set.bounds)
 
     new_interval_set.add_interval_set(self)
-    new_interval_set.intersect_interval_set(interval_set.sub_set(bounds))
+    new_interval_set.intersect_interval_set(interval_set)
   end
 
   def convolve_range!(range)
