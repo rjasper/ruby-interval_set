@@ -26,7 +26,7 @@ http://www.rubydoc.info/gems/interval_set
 
 ## Usage
 
-Create a interval set:
+Create an interval set:
 
 ```ruby
 IntervalSet.new             # -> []
